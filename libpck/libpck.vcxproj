@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6D54D481-C554-43E6-8772-1700B6C9DC27}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>libpck2</RootNamespace>
+    <RootNamespace>libpck</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

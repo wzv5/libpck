@@ -175,7 +175,7 @@
     <ClCompile Include="unittest1.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\libpck2\libpck2.vcxproj">
+    <ProjectReference Include="..\libpck\libpck.vcxproj">
       <Project>{6d54d481-c554-43e6-8772-1700b6c9dc27}</Project>
     </ProjectReference>
   </ItemGroup>

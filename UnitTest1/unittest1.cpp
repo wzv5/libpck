@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
-#include "..\libpck2\pckfile.h"
-#include "..\libpck2\pckitem.h"
+#include "../libpck/pckfile.h"
+#include "../libpck/pckitem.h"
 #include <sstream>
-#include "../libpck2/stringhelper.h"
+#include "../libpck/stringhelper.h"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTest1
