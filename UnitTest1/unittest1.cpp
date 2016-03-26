@@ -14,7 +14,7 @@ namespace UnitTest1
 	public:
 		Pck核心功能()
 		{
-			pck = PckFile::Open("Z:\\gfx.pck");
+			pck = PckFile::Open("E:\\诛仙3\\element\\gfx.pck");
 		}
 
 		TEST_METHOD(获得文件数)

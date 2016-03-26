@@ -11,6 +11,7 @@
 #include "stringhelper.h"
 #include <zlib.h>
 #include "pckitem.h"
+#include "pckfileio.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -22,23 +23,15 @@ public:
 	void ReadTail();
 	void ReadIndexTable();
 	int ReadIndex(_PckItemIndex* pindex);
-	void FSeek(std::ios::pos_type pos);
-	void FSeek(std::ios::pos_type off, std::ios::seekdir way);
-	void FRead(void* buf, size_t len);
 
 	PckFile* m_pck;
-	std::string m_filename;
-	std::fstream m_stream[2];
-	std::size_t m_filesize1;
-	bool m_inpkx;
-	bool m_haspkx;
+	PckFileIO m_file;
 	_PckHead m_head;
 	_PckTail m_tail;
 	std::tuple<size_t, size_t> m_indexRange;
 	std::vector<PckItem> m_items;
-	std::mutex m_streamlock;
-	size_t m_totalsize;
-	size_t m_totalciphersize;
+	size_t m_totalsize = 0;
+	size_t m_totalciphersize = 0;
 };
 
 PckFile::PckFile()
@@ -50,29 +43,7 @@ std::shared_ptr<PckFile> PckFile::Open(const std::string& filename, bool readonl
 {
 	auto pck = std::shared_ptr<PckFile>(new PckFile());
 	auto& p = pck->pImpl;
-	p->m_filename = filename;
-	auto mode = std::ios::in | std::ios::binary;
-	if (!readonly) mode |= std::ios::out;
-	p->m_stream[0].open(filename, mode);
-	if (!p->m_stream[0].is_open())
-	{
-		throw std::runtime_error("打开文件失败");
-	}
-	p->m_stream[0].seekg(0, std::ios::end);
-	p->m_filesize1 = (size_t)p->m_stream[0].tellg();
-	p->m_stream[0].seekg(0);
-	std::string filename2 = filename;
-	filename2[filename2.size() - 2] = 'k';
-	filename2[filename2.size() - 1] = 'x';
-	if (fs::exists(filename2))
-	{
-		p->m_haspkx = true;
-		p->m_stream[1].open(filename2, mode);
-		if (!p->m_stream[1].is_open())
-		{
-			throw std::runtime_error("打开文件失败");
-		}
-	}
+	p->m_file.Open(filename.c_str(), readonly);
 	p->ReadHead();
 	p->ReadTail();
 	p->ReadIndexTable();
@@ -137,12 +108,12 @@ std::vector<uint8_t> PckFile::GetSingleFileData(const PckItem& item)
 
 std::vector<uint8_t> PckFile::GetSingleFileCipherData(const PckItem& item)
 {
-	std::lock_guard<std::mutex> lock(pImpl->m_streamlock);
+	std::lock_guard<std::mutex> lock(pImpl->m_file.GetMutex());
 	std::vector<uint8_t> buf;
 	size_t len = item.m_index.dwFileCipherDataSize;
 	buf.resize(len);
-	pImpl->FSeek(item.m_index.dwAddressOffset);
-	pImpl->FRead(buf.data(), len);
+	pImpl->m_file.Seek(item.m_index.dwAddressOffset);
+	pImpl->m_file.Read(buf.data(), len);
 	return std::move(buf);
 }
 
@@ -192,7 +163,7 @@ uint32_t PckFile::Extract_if(const std::string& directory,
 	{
 		try
 		{
-			loc = std::locale("chinese-simplified_china.936");  // Windows格式
+			loc = std::locale("zh-CN");  // Windows格式
 		}
 		catch (...)
 		{
@@ -269,7 +240,7 @@ uint32_t PckFile::Extract_if(const std::string& directory,
 			stopflag = true;
 			for (auto& to : threads)
 				to.t.join();
-			return nfiles;
+			throw std::runtime_error("用户手动取消");
 		}
 		try
 		{
@@ -330,18 +301,14 @@ size_t PckFile::GetRedundancySize() const noexcept
 // PckFileImpl
 //**************************
 PckFile::PckFileImpl::PckFileImpl(PckFile* pck) : 
-	m_pck(pck),
-	m_totalsize(0),
-	m_totalciphersize(0),
-	m_haspkx(false),
-	m_inpkx(false)
+	m_pck(pck)
 {
 }
 
 void PckFile::PckFileImpl::ReadHead()
 {
-	FSeek(0);
-	FRead(&m_head, sizeof(_PckHead));
+	m_file.Seek(0);
+	m_file.Read(&m_head, sizeof(_PckHead));
 	if (m_head.dwHeadCheckHead != PCK_HEAD_VERIFY1 || m_head.dwHeadCheckTail != PCK_HEAD_VERIFY2)
 	{
 		throw std::runtime_error("文件头校验失败");
@@ -350,8 +317,8 @@ void PckFile::PckFileImpl::ReadHead()
 
 void PckFile::PckFileImpl::ReadTail()
 {
-	FSeek(m_head.dwPckSize - 280);
-	FRead(&m_tail, sizeof(_PckTail));
+	m_file.Seek(m_head.dwPckSize - 280);
+	m_file.Read(&m_tail, sizeof(_PckTail));
 	if (m_tail.dwIndexTableCheckHead != PCK_TAIL_VERIFY1 || m_tail.dwIndexTableCheckTail != PCK_TAIL_VERIFY2)
 	{
 		throw std::runtime_error("文件尾校验失败");
@@ -365,7 +332,7 @@ void PckFile::PckFileImpl::ReadTail()
 void PckFile::PckFileImpl::ReadIndexTable()
 {
 	size_t addr = m_tail.dwIndexValue ^ PCK_ADDR_MASK;
-	FSeek(addr);
+	m_file.Seek(addr);
 	m_items.resize(m_tail.dwFileCount);
 	auto pthis = m_pck->shared_from_this();
 	auto addr2 = addr;
@@ -382,8 +349,8 @@ void PckFile::PckFileImpl::ReadIndexTable()
 int PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
 {
 	uint32_t check1, check2, len1, len2;
-	FRead(&check1, 4);
-	FRead(&check2, 4);
+	m_file.Read(&check1, 4);
+	m_file.Read(&check2, 4);
 	len1 = check1 ^ PCK_INDEX_MASK1;
 	len2 = check2 ^ PCK_INDEX_MASK2;
 	if (len1 != len2)
@@ -392,12 +359,12 @@ int PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
 	}
 	if (len1 == PCK_INDEX_SIZE)
 	{
-		FRead(pindex, PCK_INDEX_SIZE);
+		m_file.Read(pindex, PCK_INDEX_SIZE);
 	}
 	else
 	{
 		std::vector<char> buf(len1);
-		FRead(buf.data(), len1);
+		m_file.Read(buf.data(), len1);
 		uLongf destLen = PCK_INDEX_SIZE;
 		auto ret = uncompress((Bytef*)pindex, &destLen, (Bytef*)buf.data(), len1);
 		if (ret != Z_OK)
@@ -406,56 +373,4 @@ int PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
 		}
 	}
 	return len1;
-}
-
-void PckFile::PckFileImpl::FSeek(std::ios::pos_type pos)
-{
-	if ((size_t)pos >= m_filesize1 && !m_haspkx)
-	{
-		throw std::runtime_error("设置文件读写指针失败");
-	}
-	if ((size_t)pos < m_filesize1)
-	{
-		m_inpkx = false;
-		if (m_stream[0].seekg(pos).fail())
-		{
-			throw std::runtime_error("设置文件读写指针失败");
-		}
-	}
-	else
-	{
-		m_inpkx = true;
-		if (m_stream[1].seekg((size_t)pos - m_filesize1).fail())
-		{
-			throw std::runtime_error("设置文件读写指针失败");
-		}
-	}
-}
-
-void PckFile::PckFileImpl::FRead(void* buf, size_t len)
-{
-	if (m_inpkx)
-	{
-		// 数据全部位于pkx文件中
-		if (m_stream[1].read((char*)buf, len).fail())
-		{
-			throw std::runtime_error("读取文件失败");
-		}
-	}
-	else
-	{
-		auto& f = m_stream[0].read((char*)buf, len);
-		size_t nread = (size_t)f.gcount();
-		if (nread < len)
-		{
-			if (!m_haspkx)
-			{
-				// 不存在pkx文件，且没有读取到指定长度的数据，抛出异常
-				throw std::runtime_error("读取文件失败");
-			}
-			// 数据跨域pck与pkx文件，继续从pkx文件中读取剩余部分
-			m_inpkx = true;
-			FRead((char*)buf + nread, len - nread);
-		}
-	}
 }
