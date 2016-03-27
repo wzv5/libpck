@@ -5,16 +5,18 @@
 #include <memory>
 #include <string>
 #include <stdexcept>
-#include <filesystem>
 #include <mutex>
 #include "pckdef.h"
-
-namespace filesystem = std::experimental::filesystem;
+#include "myfilesystem.h"
 
 class PckFileIO
 {
 public:
 	PckFileIO() = default;
+	virtual ~PckFileIO()
+	{
+		Close();
+	}
 
 	// 打开已有的文件，如果文件不存在则打开失败
 	void Open(const char* filename, bool readonly = true)
@@ -59,6 +61,7 @@ public:
 					_openpkx("rb+");
 				}
 			}
+			m_readonly = false;
 		}
 		catch (...)
 		{
@@ -106,12 +109,12 @@ public:
 		return m_pcksize + m_pkxsize;
 	}
 
-	void Seek(size_t pos)
+	void Seek(long pos)
 	{
 		if (pos < m_pcksize)
 		{
 			// 位于pck文件中
-			if (fseek(m_pckfile, (long)pos, SEEK_SET))
+			if (fseek(m_pckfile, pos, SEEK_SET))
 			{
 				throw std::runtime_error("设置文件读写指针失败");
 			}
@@ -123,7 +126,7 @@ public:
 			if (m_haspkx)
 			{
 				// 位于pkx文件中
-				if (fseek(m_pkxfile, (long)(pos - m_pcksize), SEEK_SET))
+				if (fseek(m_pkxfile, pos - m_pcksize, SEEK_SET))
 				{
 					throw std::runtime_error("设置文件读写指针失败");
 				}
@@ -140,7 +143,7 @@ public:
 				if (pos < PCK_MAX_SIZE)
 				{
 					// 没有超过pck文件的最大尺寸
-					if (fseek(m_pckfile, (long)pos, SEEK_SET))
+					if (fseek(m_pckfile, pos, SEEK_SET))
 					{
 						throw std::runtime_error("设置文件读写指针失败");
 					}
@@ -155,6 +158,11 @@ public:
 					{
 						_openpkx("wb");
 					}
+					else
+					{
+						// 如果为只读模式，则失败
+						throw std::runtime_error("设置文件读写指针失败");
+					}
 					// 创建pkx文件成功，重新seek
 					return Seek(pos);
 				}
@@ -162,9 +170,9 @@ public:
 		}
 	}
 
-	void Seek(int64_t off, int way)
+	void Seek(long off, int way)
 	{
-		int64_t pos = 0;
+		long pos = 0;
 		switch (way)
 		{
 		case SEEK_CUR:
@@ -215,7 +223,7 @@ public:
 		}
 	}
 
-	void Write(void* buf, size_t len)
+	void Write(const void* buf, size_t len)
 	{
 		if (m_inpkx)
 		{

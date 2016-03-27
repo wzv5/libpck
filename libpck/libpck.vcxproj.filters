@@ -36,6 +36,12 @@
     <ClInclude Include="pckfileio.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="myfilesystem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pckpendingitem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pckfile.cpp">

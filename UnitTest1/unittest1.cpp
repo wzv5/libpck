@@ -15,6 +15,7 @@ namespace UnitTest1
 		Pck核心功能()
 		{
 			pck = PckFile::Open("E:\\诛仙3\\element\\gfx.pck");
+			//pck = PckFile::Open("Z:\\configs.pck");
 		}
 
 		TEST_METHOD(获得文件数)
@@ -35,7 +36,7 @@ namespace UnitTest1
 		{
 			stringstream ss;
 			size_t s1, s2, s3, s4, s5;
-			s1 = pck->GetTotalCipherDataSize();
+			s1 = pck->GetTotalCompressDataSize();
 			s2 = pck->GetTotalDataSize();
 			s3 = pck->GetRedundancySize();
 			s4 = pck->GetFileSize();
@@ -53,6 +54,75 @@ namespace UnitTest1
 		TEST_METHOD(解压)
 		{
 			pck->Extract("Z:\\");
+		}
+	};
+
+	TEST_CLASS(新建PCK)
+	{
+		shared_ptr<PckFile> pck;
+	public:
+		新建PCK()
+		{
+			pck = PckFile::Create("Z:\\test.pck", true);
+		}
+
+		TEST_METHOD(添加文件)
+		{
+			pck->AddItem("D:\\User\\Desktop\\测试.txt", "test\\测试.txt");
+		}
+	};
+
+	TEST_CLASS(修改PCK)
+	{
+		shared_ptr<PckFile> pck;
+	public:
+		修改PCK()
+		{
+			pck = PckFile::Open("Z:\\configs.pck", false);
+		}
+
+		TEST_METHOD(添加文件)
+		{
+			stringstream ss;
+			ss << "添加文件前：" << endl;
+			ss << "文件数：" << pck->GetFileCount() << endl;
+			ss << "文件大小：" << pck->GetFileSize() << endl;
+			ss << "数据量：" << pck->GetTotalCompressDataSize() << endl;
+			ss << "冗余：" << pck->GetRedundancySize() << endl;
+			ss << "索引表：" << pck->GetIndexTableSize() << endl;
+
+			pck->AddItem("D:\\User\\Desktop\\测试.txt", "test\\测试.txt");
+
+			ss << "添加文件后：" << endl;
+			ss << "文件数：" << pck->GetFileCount() << endl;
+			ss << "文件大小：" << pck->GetFileSize() << endl;
+			ss << "数据量：" << pck->GetTotalCompressDataSize() << endl;
+			ss << "冗余：" << pck->GetRedundancySize() << endl;
+			ss << "索引表：" << pck->GetIndexTableSize() << endl;
+
+			Logger::WriteMessage(ss.str().c_str());
+			auto data = pck->GetSingleFileItem("test\\测试.txt").GetData();
+			auto pstr = (char*)data.data();
+			Logger::WriteMessage(pstr);
+		}
+	};
+
+	TEST_CLASS(创建PCK)
+	{
+	public:
+		TEST_METHOD(重建)
+		{
+			PckFile::ReBuild("E:\\诛仙3\\element\\models.pck", "Z:\\new.pck", true);
+		}
+
+		TEST_METHOD(从目录创建)
+		{
+			PckFile::CreateFromDirectory("Z:\\test.pck", "Z:\\npm", false, true, [](auto i, auto t) {
+				stringstream ss;
+				ss << i << " / " << t << endl;
+				Logger::WriteMessage(ss.str().c_str());
+				return true;
+			});
 		}
 	};
 

@@ -8,19 +8,19 @@ const char* PckItem::GetFileName() const
 
 uint32_t PckItem::GetDataSize() const
 {
-	return m_index.dwFileClearDataSize;
+	return m_index.dwFileDataSize;
 }
 
-uint32_t PckItem::GetCipherDataSize() const
+uint32_t PckItem::GetCompressDataSize() const
 {
-	return m_index.dwFileCipherDataSize;
+	return m_index.dwFileCompressDataSize;
 }
 
-std::vector<uint8_t> PckItem::GetCipherData() const
+std::vector<uint8_t> PckItem::GetCompressData() const
 {
 	if (auto p = m_pck.lock())
 	{
-		return p->GetSingleFileCipherData(*this);
+		return p->GetSingleFileCompressData(*this);
 	}
 	else
 	{

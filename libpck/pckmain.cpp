@@ -8,5 +8,6 @@ int main()
 	printf("文件数：%d\n============\n", pck->GetFileCount());
 	pck->Extract("/home/wangzheng/pckaaa", [](auto i, auto t) {
 		printf("%d / %d\n", i, t);
+		return true;
 	});
 }

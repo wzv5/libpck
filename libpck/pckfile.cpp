@@ -1,19 +1,23 @@
-﻿#include "pckfile.h"
+﻿
+#pragma warning(disable: 4018)
+#pragma warning(disable: 4244)
+#pragma warning(disable: 4267)
+
+#include "pckfile.h"
 #include <cstring>
 #include <tuple>
 #include <mutex>
 #include <thread>
 #include <atomic>
 #include <future>
-#include <experimental/filesystem>
 #include <locale>
 #include <codecvt>
 #include "stringhelper.h"
 #include <zlib.h>
+#include "myfilesystem.h"
 #include "pckitem.h"
 #include "pckfileio.h"
-
-namespace fs = std::experimental::filesystem;
+#include "pckpendingitem.h"
 
 class PckFile::PckFileImpl
 {
@@ -22,21 +26,37 @@ public:
 	void ReadHead();
 	void ReadTail();
 	void ReadIndexTable();
-	int ReadIndex(_PckItemIndex* pindex);
+	size_t ReadIndex(_PckItemIndex* pindex);
+	void WriteHead();
+	void WriteTail();
+	void WriteIndexTable();
+	size_t WriteIndex(const _PckItemIndex& index);
+	void AddPendingItem(std::unique_ptr<PckPendingItem>&& item);
+	static void EnumDir(filesystem::path dir, filesystem::path base, std::function<void(std::string diskpath, std::string pckpath)>);
 
 	PckFile* m_pck;
 	PckFileIO m_file;
-	_PckHead m_head;
-	_PckTail m_tail;
-	std::tuple<size_t, size_t> m_indexRange;
+	_PckHead m_head = { 0 };
+	_PckTail m_tail = { 0 };
 	std::vector<PckItem> m_items;
+	size_t m_indextableaddr = 0;
+	size_t m_indextablesize = 0;
 	size_t m_totalsize = 0;
-	size_t m_totalciphersize = 0;
+	size_t m_totalcompresssize = 0;
+
+	// 事务相关
+	std::vector<std::unique_ptr<PckPendingItem>> m_pendingitems;
+	bool m_trans = false;
 };
 
 PckFile::PckFile()
 {
 	pImpl = make_unique<PckFileImpl>(this);
+}
+
+PckFile::~PckFile()
+{
+
 }
 
 std::shared_ptr<PckFile> PckFile::Open(const std::string& filename, bool readonly)
@@ -47,6 +67,16 @@ std::shared_ptr<PckFile> PckFile::Open(const std::string& filename, bool readonl
 	p->ReadHead();
 	p->ReadTail();
 	p->ReadIndexTable();
+	return std::move(pck);
+}
+
+std::shared_ptr<PckFile> PckFile::Create(const std::string& filename, bool overwrite)
+{
+	auto pck = std::shared_ptr<PckFile>(new PckFile());
+	auto& p = pck->pImpl;
+	p->m_file.Create(filename.c_str(), overwrite);
+	p->m_head.dwPckSize = sizeof(_PckHead) + sizeof(_PckTail);
+	p->m_indextableaddr = sizeof(_PckHead);
 	return std::move(pck);
 }
 
@@ -88,29 +118,29 @@ std::vector<uint8_t> PckFile::GetSingleFileData(const std::string& filename)
 std::vector<uint8_t> PckFile::GetSingleFileData(const PckItem& item)
 {
 	const _PckItemIndex& index = item.m_index;
-	auto cipherdata = GetSingleFileCipherData(item);
-	std::vector<uint8_t> buf(index.dwFileClearDataSize);
-	if (/*cipherdata.size() > PCK_BEGINCOMPRESS_SIZE || */index.dwFileCipherDataSize != index.dwFileClearDataSize)
+	auto compressdata = GetSingleFileCompressData(item);
+	std::vector<uint8_t> buf(index.dwFileDataSize);
+	uLongf destLen = index.dwFileDataSize;
+	auto ret = uncompress((Bytef*)buf.data(), &destLen, (Bytef*)compressdata.data(), (uLongf)compressdata.size());
+	if (ret != Z_OK)
 	{
-		uLongf destLen = index.dwFileClearDataSize;
-		auto ret = uncompress((Bytef*)buf.data(), &destLen, (Bytef*)cipherdata.data(), (uLongf)cipherdata.size());
-		if (ret != Z_OK)
+		if (index.dwFileCompressDataSize != index.dwFileDataSize)
 		{
 			throw std::runtime_error("解压数据失败");
 		}
-	}
-	else
-	{
-		memcpy(buf.data(), cipherdata.data(), cipherdata.size());
+		else
+		{
+			memcpy(buf.data(), compressdata.data(), compressdata.size());
+		}
 	}
 	return std::move(buf);
 }
 
-std::vector<uint8_t> PckFile::GetSingleFileCipherData(const PckItem& item)
+std::vector<uint8_t> PckFile::GetSingleFileCompressData(const PckItem& item)
 {
 	std::lock_guard<std::mutex> lock(pImpl->m_file.GetMutex());
 	std::vector<uint8_t> buf;
-	size_t len = item.m_index.dwFileCipherDataSize;
+	size_t len = item.m_index.dwFileCompressDataSize;
 	buf.resize(len);
 	pImpl->m_file.Seek(item.m_index.dwAddressOffset);
 	pImpl->m_file.Read(buf.data(), len);
@@ -142,7 +172,7 @@ const PckItem& PckFile::operator[](const std::string& filename) const
 	return GetSingleFileItem(filename);
 }
 
-uint32_t PckFile::Extract(const std::string& directory, std::function<bool(uint32_t index, uint32_t total)> callback)
+uint32_t PckFile::Extract(const std::string& directory, ProcessCallback callback)
 {
 	// fn参数传null，则默认解压所有，不传一个真正的函数是为了提高效率，避免多余的跳转
 	return Extract_if(directory, {}, callback);
@@ -150,7 +180,7 @@ uint32_t PckFile::Extract(const std::string& directory, std::function<bool(uint3
 
 uint32_t PckFile::Extract_if(const std::string& directory,
 	std::function<bool(const PckItem& item)> fn,
-	std::function<bool(uint32_t index, uint32_t total)> callback)
+	ProcessCallback callback)
 {
 	// 由于pck内部保存的文件名使用gbk编码，linux可能乱码
 	// 如果当前系统不支持GBK编码，这行将抛出异常
@@ -197,7 +227,7 @@ uint32_t PckFile::Extract_if(const std::string& directory,
 	// 符合条件的文件数
 	std::atomic<uint32_t> nfiles(0);
 	// 目录的绝对路径
-	fs::path dir = fs::system_complete(directory);
+	filesystem::path dir = filesystem::system_complete(directory);
 
 	for (size_t i = 0; i < nthread; ++i)
 	{
@@ -212,9 +242,9 @@ uint32_t PckFile::Extract_if(const std::string& directory,
 					if (!fn || fn(item))
 					{
 						auto data = pck->GetSingleFileData(item);
-						fs::path p = dir;
+						filesystem::path p = dir;
 						p /= StringHelper::A2W(item.GetFileName(), loc).c_str();
-						fs::create_directories(p.parent_path());  // 如果目录创建失败，将抛出异常
+						filesystem::create_directories(p.parent_path());  // 如果目录创建失败，将抛出异常
 						std::ofstream f(p.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 						if (f.write((const char*)data.data(), data.size()).fail())
 						{
@@ -280,26 +310,219 @@ size_t PckFile::GetTotalDataSize() const noexcept
 	return pImpl->m_totalsize;
 }
 
-size_t PckFile::GetTotalCipherDataSize() const noexcept
+size_t PckFile::GetTotalCompressDataSize() const noexcept
 {
-	return pImpl->m_totalciphersize;
+	return pImpl->m_totalcompresssize;
 }
 
 size_t PckFile::GetIndexTableSize() const noexcept
 {
-	return std::get<1>(pImpl->m_indexRange) - std::get<0>(pImpl->m_indexRange);
+	return pImpl->m_indextablesize;
 }
 
 size_t PckFile::GetRedundancySize() const noexcept
 {
 	return pImpl->m_head.dwPckSize - sizeof(_PckHead) - sizeof(_PckTail)
-		- GetIndexTableSize()
-		- pImpl->m_totalciphersize;
+		- pImpl->m_indextablesize
+		- pImpl->m_totalcompresssize;
 }
 
-//**************************
+void PckFile::BeginTransaction() noexcept
+{
+	pImpl->m_pendingitems.clear();
+	pImpl->m_trans = true;
+}
+
+void PckFile::CancelTransaction() noexcept
+{
+	pImpl->m_pendingitems.clear();
+	pImpl->m_trans = false;
+}
+
+void PckFile::CommitTransaction(ProcessCallback callback)
+{
+	if (!pImpl->m_trans)
+	{
+		pImpl->m_pendingitems.clear();
+		return;
+	}
+
+	auto total = pImpl->m_pendingitems.size();
+	for (size_t i = 0; i < total; ++i)
+	{
+		auto& p = pImpl->m_pendingitems[i];
+		if (callback && !callback(i, total))
+		{
+			throw std::runtime_error("用户手动取消");
+		}
+		auto t = p->GetType();
+		if (t == PckPendingActionType::Add)
+		{
+			auto p1 = (PckPendingItem_Add*)p.get();
+			auto& compressdata = p1->GetCompressData();
+			auto datasize = p1->GetDataSize();
+			auto& name = p1->GetFileName();
+			pImpl->m_file.Seek(pImpl->m_indextableaddr);
+			pImpl->m_file.Write(compressdata.data(), compressdata.size());
+			
+
+			auto item = PckItem();
+			item.m_pck = shared_from_this();
+			item.m_index.dwAddressOffset = pImpl->m_indextableaddr;
+			item.m_index.dwFileCompressDataSize = compressdata.size();
+			item.m_index.dwFileDataSize = datasize;
+			memset(item.m_index.szFilename, 0, 256);
+			strcpy(item.m_index.szFilename, p1->GetFileName().c_str());
+			pImpl->m_items.push_back(std::move(item));
+			
+			pImpl->m_indextableaddr += compressdata.size();
+			pImpl->m_totalcompresssize += compressdata.size();
+			pImpl->m_totalsize += datasize;
+		}
+		else if (t == PckPendingActionType::Delete)
+		{
+			auto p1 = (PckPendingItem_Delete*)p.get();
+			auto& item = p1->GetItem();
+			auto iter = std::remove(pImpl->m_items.begin(), pImpl->m_items.end(), item);
+			pImpl->m_items.erase(iter);
+
+			pImpl->m_totalcompresssize -= item.GetCompressDataSize();
+			pImpl->m_totalsize -= item.GetDataSize();
+		}
+		else if (t == PckPendingActionType::Rename)
+		{
+			auto p1 = (PckPendingItem_Rename*)p.get();
+			auto& item = const_cast<PckItem&>(p1->GetItem());
+			memset(item.m_index.szFilename, 0, 256);
+			strcpy(item.m_index.szFilename, p1->GetNewFileName().c_str());
+		}
+		else if (t == PckPendingActionType::Update)
+		{
+			auto p1 = (PckPendingItem_Update*)p.get();
+			auto& compressdata = p1->GetCompressData();
+			auto& data = p1->GetData();
+			auto& item = const_cast<PckItem&>(p1->GetItem());
+
+			pImpl->m_file.Seek(pImpl->m_indextableaddr);
+			pImpl->m_file.Write(compressdata.data(), compressdata.size());
+
+			pImpl->m_totalcompresssize -= item.GetCompressDataSize();
+			pImpl->m_totalsize -= item.GetDataSize();
+			
+			item.m_index.dwAddressOffset = pImpl->m_indextableaddr;
+			item.m_index.dwFileCompressDataSize = compressdata.size();
+			item.m_index.dwFileDataSize = data.size();
+
+			pImpl->m_indextableaddr += compressdata.size();
+			pImpl->m_totalcompresssize += item.GetCompressDataSize();
+			pImpl->m_totalsize += item.GetDataSize();
+		}
+		p->Release();
+	}
+
+	// 写出顺序是重要的！
+	pImpl->WriteIndexTable();
+	pImpl->WriteHead();
+	pImpl->WriteTail();
+
+	pImpl->m_pendingitems.clear();
+	pImpl->m_trans = false;
+}
+
+void PckFile::AddItem(const void* buf, size_t len, const std::string& filename)
+{
+	const PckItem* pitem = nullptr;
+	try
+	{
+		pitem = &GetSingleFileItem(filename);
+	}
+	catch (...)
+	{
+		pImpl->AddPendingItem(std::make_unique<PckPendingItem_AddBuffer>(filename, buf, len));
+		return;
+	}
+	
+	// 如果已有该文件名，则转换为修改操作
+	UpdateItem(*pitem, buf, len);
+}
+
+void PckFile::AddItem(const PckItem& item)
+{
+	if (item.m_pck.lock().get() == this)
+	{
+		// 如果传入的文件对象为当前pck文件中的，直接跳过
+		return;
+	}
+	pImpl->AddPendingItem(std::make_unique<PckPendingItem_AddPckItem>(item));
+}
+
+void PckFile::AddItem(const std::string& diskfilename, const std::string& pckfilename)
+{
+	const PckItem* pitem = nullptr;
+	try
+	{
+		pitem = &GetSingleFileItem(pckfilename);
+	}
+	catch (...)
+	{
+		pImpl->AddPendingItem(std::make_unique<PckPendingItem_AddFile>(pckfilename, diskfilename));
+		return;
+	}
+
+	// 如果已有该文件名，则转换为修改操作
+	UpdateItem(*pitem, diskfilename);
+	
+}
+
+void PckFile::DeleteItem(const PckItem& item)
+{
+	pImpl->AddPendingItem(std::make_unique<PckPendingItem_Delete>(item));
+}
+
+void PckFile::RenameItem(const PckItem& item, const std::string& newname)
+{
+	pImpl->AddPendingItem(std::make_unique<PckPendingItem_Rename>(item, newname));
+}
+
+void PckFile::UpdateItem(const PckItem& item, const void* buf, size_t len)
+{
+	pImpl->AddPendingItem(std::make_unique<PckPendingItem_UpdateBuffer>(item, buf, len));
+}
+
+void PckFile::UpdateItem(const PckItem& item, const std::string& diskfilename)
+{
+	pImpl->AddPendingItem(std::make_unique<PckPendingItem_UpdateFile>(item, diskfilename));
+}
+
+void PckFile::CreateFromDirectory(const std::string& filename, const std::string& dir, bool usedirname, bool overwrite, ProcessCallback callback)
+{
+	auto pck = PckFile::Create(filename, overwrite);
+	auto basedir = filesystem::system_complete(dir + "/");
+	filesystem::path rootname = usedirname ? basedir.parent_path().filename() : "";
+	pck->BeginTransaction();
+	PckFileImpl::EnumDir(basedir, rootname, [&](std::string diskpath, std::string pckpath) {
+		pck->AddItem(diskpath, pckpath);
+	});
+	pck->CommitTransaction(callback);
+}
+
+void PckFile::ReBuild(const std::string& filename, const std::string& newname, bool overwrite, ProcessCallback callback)
+{
+	auto pck = PckFile::Open(filename);
+	auto pcknew = PckFile::Create(newname, overwrite);
+	pcknew->BeginTransaction();
+	for (auto& i : pck->pImpl->m_items)
+	{
+		pcknew->AddItem(i);
+	}
+	pcknew->CommitTransaction(callback);
+}
+
+//************************
 // PckFileImpl
-//**************************
+//************************
+#pragma region PckFileImpl
+
 PckFile::PckFileImpl::PckFileImpl(PckFile* pck) : 
 	m_pck(pck)
 {
@@ -317,7 +540,7 @@ void PckFile::PckFileImpl::ReadHead()
 
 void PckFile::PckFileImpl::ReadTail()
 {
-	m_file.Seek(m_head.dwPckSize - 280);
+	m_file.Seek(m_head.dwPckSize - sizeof(_PckTail));
 	m_file.Read(&m_tail, sizeof(_PckTail));
 	if (m_tail.dwIndexTableCheckHead != PCK_TAIL_VERIFY1 || m_tail.dwIndexTableCheckTail != PCK_TAIL_VERIFY2)
 	{
@@ -331,22 +554,21 @@ void PckFile::PckFileImpl::ReadTail()
 
 void PckFile::PckFileImpl::ReadIndexTable()
 {
-	size_t addr = m_tail.dwIndexValue ^ PCK_ADDR_MASK;
-	m_file.Seek(addr);
+	m_indextableaddr = m_tail.dwIndexValue ^ PCK_ADDR_MASK;
+	m_file.Seek(m_indextableaddr);
 	m_items.resize(m_tail.dwFileCount);
 	auto pthis = m_pck->shared_from_this();
-	auto addr2 = addr;
+	m_indextablesize = 0;
 	for (size_t i = 0; i < m_tail.dwFileCount; i++)
 	{
 		m_items[i].m_pck = pthis;
-		addr2 += ReadIndex(&m_items[i].m_index);
-		m_totalsize += m_items[i].m_index.dwFileClearDataSize;
-		m_totalciphersize += m_items[i].m_index.dwFileCipherDataSize;
+		m_indextablesize += ReadIndex(&m_items[i].m_index);
+		m_totalsize += m_items[i].m_index.dwFileDataSize;
+		m_totalcompresssize += m_items[i].m_index.dwFileCompressDataSize;
 	}
-	m_indexRange = std::make_tuple(addr, addr2);
 }
 
-int PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
+size_t PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
 {
 	uint32_t check1, check2, len1, len2;
 	m_file.Read(&check1, 4);
@@ -357,20 +579,111 @@ int PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
 	{
 		throw std::runtime_error("文件索引的长度错误");
 	}
-	if (len1 == PCK_INDEX_SIZE)
+	std::vector<char> buf(len1);
+	m_file.Read(buf.data(), len1);
+	uLongf destLen = PCK_INDEX_SIZE;
+	auto ret = uncompress((Bytef*)pindex, &destLen, (Bytef*)buf.data(), len1);
+	if (ret != Z_OK)
 	{
-		m_file.Read(pindex, PCK_INDEX_SIZE);
-	}
-	else
-	{
-		std::vector<char> buf(len1);
-		m_file.Read(buf.data(), len1);
-		uLongf destLen = PCK_INDEX_SIZE;
-		auto ret = uncompress((Bytef*)pindex, &destLen, (Bytef*)buf.data(), len1);
-		if (ret != Z_OK)
+		if (len1 != PCK_INDEX_SIZE)
 		{
 			throw std::runtime_error("解压文件索引失败");
 		}
+		else
+		{
+			memcpy(&pindex, buf.data(), len1);
+		}
 	}
-	return len1;
+	return len1 + 8;
 }
+
+void PckFile::PckFileImpl::WriteHead()
+{
+	m_head.dwHeadCheckHead = PCK_HEAD_VERIFY1;
+	m_head.dwHeadCheckTail = PCK_HEAD_VERIFY2;
+	m_head.dwPckSize = m_indextableaddr + m_indextablesize + sizeof(_PckTail);
+	m_file.Seek(0);
+	m_file.Write(&m_head, sizeof(_PckHead));
+}
+
+void PckFile::PckFileImpl::WriteTail()
+{
+	m_tail.dwIndexTableCheckHead = PCK_TAIL_VERIFY1;
+	m_tail.dwIndexTableCheckTail = PCK_TAIL_VERIFY2;
+	m_tail.dwFileCount = m_items.size();
+	m_tail.dwIndexValue = m_indextableaddr ^ PCK_ADDR_MASK;
+	m_tail.dwVersion1 = m_tail.dwVersion2 = PCK_VERSION;
+	memset(m_tail.szAdditionalInfo, 0, 256);
+	strcpy(m_tail.szAdditionalInfo + 4, PCK_ADDITIONAL_INFO);
+	strcat(m_tail.szAdditionalInfo + 4, PCK_ADDITIONAL_INFO_STSM);
+	m_file.Seek(m_head.dwPckSize - sizeof(_PckTail));
+	m_file.Write(&m_tail, sizeof(_PckTail));
+}
+
+void PckFile::PckFileImpl::WriteIndexTable()
+{
+	m_file.Seek(m_indextableaddr);
+	m_indextablesize = 0;
+	for (auto& i : m_items)
+	{
+		m_indextablesize += WriteIndex(i.m_index);
+	}
+}
+
+size_t PckFile::PckFileImpl::WriteIndex(const _PckItemIndex& index)
+{
+	auto len = compressBound(sizeof(index));
+	std::vector<uint8_t> buf(len);
+	auto ret = compress2(buf.data(), &len, (const Bytef*)&index, sizeof(index), Z_DEFAULT_COMPRESSION);
+	if (ret != Z_OK)
+	{
+		throw std::runtime_error("压缩数据失败");
+	}
+	buf.resize(len);
+	uint32_t len1 = len ^ PCK_INDEX_MASK1;
+	uint32_t len2 = len ^ PCK_INDEX_MASK2;
+	m_file.Write(&len1, 4);
+	m_file.Write(&len2, 4);
+	m_file.Write(buf.data(), len);
+	return len + 8;
+}
+
+void PckFile::PckFileImpl::AddPendingItem(std::unique_ptr<PckPendingItem>&& item)
+{
+	auto trans = m_trans;
+	if (!trans)
+	{
+		m_pck->BeginTransaction();
+	}
+	m_pendingitems.push_back(std::move(item));
+	if (!trans)
+	{
+		m_pck->CommitTransaction();
+	}
+}
+
+void PckFile::PckFileImpl::EnumDir(filesystem::path dir, filesystem::path base, std::function<void(std::string, std::string)> callback)
+{
+	filesystem::directory_iterator dir_end;
+	for (auto i = filesystem::directory_iterator(dir); i != dir_end; ++i)
+	{
+		auto status = i->status();
+		if (filesystem::is_regular_file(status))
+		{
+			auto diskpath = StringHelper::T2A(i->path().c_str());
+			auto pckpath = StringHelper::T2A((base / i->path().filename()).c_str());
+			StringHelper::ReplaceAll<std::string>(diskpath, "\\", "/");
+			StringHelper::ReplaceAll<std::string>(pckpath, "/", "\\");
+			if (pckpath[0] == '/')
+			{
+				pckpath = pckpath.substr(1);
+			}
+			callback(diskpath, pckpath);
+		}
+		else if (filesystem::is_directory(status))
+		{
+			EnumDir(*i, base / i->path().filename(), callback);
+		}
+	}
+}
+#pragma endregion

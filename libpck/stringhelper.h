@@ -146,6 +146,15 @@ namespace StringHelper
 			throw std::runtime_error("转换编码失败");
 		}
 		return tobuf.data();
+	}
 
+	inline string T2A(const std::wstring& s, const locale& loc = locale(""))
+	{
+		return W2A(s, loc);
+	}
+
+	inline string T2A(const std::string& s, const locale& loc = locale(""))
+	{
+		return s;
 	}
 }

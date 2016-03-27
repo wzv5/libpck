@@ -17,11 +17,15 @@ public:
 
 	const char* GetFileName() const;
 	uint32_t GetDataSize() const;
-	uint32_t GetCipherDataSize() const;
+	uint32_t GetCompressDataSize() const;
 
 	// 以下两个方法不推荐使用，效率略低，尽可能使用PckFile类中的方法
-	std::vector<uint8_t> GetCipherData() const;
+	std::vector<uint8_t> GetCompressData() const;
 	std::vector<uint8_t> GetData() const;
+	bool operator==(const PckItem& item) const
+	{
+		return &item == this;
+	}
 
 private:
 	_PckItemIndex m_index;

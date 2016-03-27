@@ -141,10 +141,12 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="myfilesystem.h" />
     <ClInclude Include="pckdef.h" />
     <ClInclude Include="pckfile.h" />
     <ClInclude Include="pckfileio.h" />
     <ClInclude Include="pckitem.h" />
+    <ClInclude Include="pckpendingitem.h" />
     <ClInclude Include="stringhelper.h" />
     <ClInclude Include="zlib.h" />
   </ItemGroup>

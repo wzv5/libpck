@@ -50,8 +50,8 @@ struct _PckItemIndex
 	char szFilename[MAX_PATH_PCK];
 	uint32_t dwUnknown1;
 	uint32_t dwAddressOffset;
-	uint32_t dwFileClearDataSize;
-	uint32_t dwFileCipherDataSize;
+	uint32_t dwFileDataSize;
+	uint32_t dwFileCompressDataSize;
 	uint32_t dwUnknown2;
 };
 #pragma pack()
