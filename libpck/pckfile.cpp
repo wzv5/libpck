@@ -403,17 +403,33 @@ void PckFile::CommitTransaction(ProcessCallback callback)
 			auto& data = p1->GetData();
 			auto& item = const_cast<PckItem&>(p1->GetItem());
 
-			pImpl->m_file.Seek(pImpl->m_indextableaddr);
-			pImpl->m_file.Write(compressdata.data(), compressdata.size());
-
+			// 先在统计信息中减去旧数据的大小
 			pImpl->m_totalcompresssize -= item.GetCompressDataSize();
 			pImpl->m_totalsize -= item.GetDataSize();
-			
-			item.m_index.dwAddressOffset = pImpl->m_indextableaddr;
-			item.m_index.dwFileCompressDataSize = compressdata.size();
-			item.m_index.dwFileDataSize = data.size();
 
-			pImpl->m_indextableaddr += compressdata.size();
+			if (compressdata.size() > item.GetCompressDataSize())
+			{
+				// 如果新数据量大于旧数据量，则在文件末尾追加新数据
+				pImpl->m_file.Seek(pImpl->m_indextableaddr);
+				pImpl->m_file.Write(compressdata.data(), compressdata.size());
+
+				item.m_index.dwAddressOffset = pImpl->m_indextableaddr;
+				item.m_index.dwFileCompressDataSize = compressdata.size();
+				item.m_index.dwFileDataSize = data.size();
+
+				pImpl->m_indextableaddr += compressdata.size();
+			}
+			else
+			{
+				// 如果新数据量小于等于旧数据量，则直接覆盖之前的，避免产生多余的冗余数据量
+				pImpl->m_file.Seek(item.m_index.dwAddressOffset);
+				pImpl->m_file.Write(compressdata.data(), compressdata.size());
+
+				item.m_index.dwFileCompressDataSize = compressdata.size();
+				item.m_index.dwFileDataSize = data.size();
+			}
+
+			// 更新统计信息
 			pImpl->m_totalcompresssize += item.GetCompressDataSize();
 			pImpl->m_totalsize += item.GetDataSize();
 		}

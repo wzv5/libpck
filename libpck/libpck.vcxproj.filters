@@ -42,6 +42,12 @@
     <ClInclude Include="pckpendingitem.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pckfile_c.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pckfile.cpp">
@@ -50,5 +56,18 @@
     <ClCompile Include="pckitem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="pckfile_c.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libpck.def">
+      <Filter>源文件</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="libpck.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
