@@ -270,6 +270,42 @@ public:
 		}
 	}
 
+	void SetSize(size_t len)
+	{
+		if (m_readonly)
+		{
+			throw std::runtime_error("设置文件大小失败");
+		}
+
+		Seek(len);
+
+		if (len < PCK_MAX_SIZE)
+		{
+			if (ftruncate(fileno(m_pckfile), len) != 0)
+			{
+				throw std::runtime_error("设置文件大小失败");
+			}
+			if (m_haspkx)
+			{
+				remove(m_pkxname.c_str());
+				m_haspkx = false;
+			}
+			m_pcksize = _getfilesize(m_pckfile);
+			m_pkxsize = 0;
+		}
+		else
+		{
+			if (ftruncate(fileno(m_pckfile), PCK_MAX_SIZE) != 0 || ftruncate(fileno(m_pkxfile), len - PCK_MAX_SIZE) != 0)
+			{
+				throw std::runtime_error("设置文件大小失败");
+			}
+			m_pcksize = _getfilesize(m_pckfile);
+			m_pkxsize = _getfilesize(m_pkxfile);
+		}
+
+		Seek(0);
+	}
+
 	std::mutex& GetMutex()
 	{
 		return m_mutex;
@@ -313,6 +349,7 @@ private:
 	{
 		size_t ret;
 		auto pos = ftell(f);
+		fflush(f);
 		fseek(f, 0, SEEK_END);
 		ret = ftell(f);
 		fseek(f, pos, SEEK_SET);

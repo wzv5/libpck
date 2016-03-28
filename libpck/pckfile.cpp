@@ -440,6 +440,9 @@ void PckFile::CommitTransaction(ProcessCallback callback)
 	pImpl->WriteIndexTable();
 	pImpl->WriteHead();
 	pImpl->WriteTail();
+	
+	// 修正文件尺寸
+	pImpl->m_file.SetSize(pImpl->m_head.dwPckSize);
 
 	pImpl->m_pendingitems.clear();
 	pImpl->m_trans = false;

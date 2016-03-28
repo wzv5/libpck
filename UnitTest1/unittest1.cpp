@@ -106,6 +106,11 @@ namespace UnitTest1
 			auto pstr = (char*)data.data();
 			Logger::WriteMessage(pstr);
 		}
+
+		TEST_METHOD(删除文件)
+		{
+			pck->DeleteItem((*pck)[0]);
+		}
 	};
 
 	TEST_CLASS(创建PCK)
