@@ -2,6 +2,7 @@
 #include "CppUnitTest.h"
 #include "../libpck/pckfile.h"
 #include "../libpck/pckitem.h"
+#include "../libpck/pckfile_c.h"
 #include <sstream>
 #include "../libpck/stringhelper.h"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -112,7 +113,8 @@ namespace UnitTest1
 	public:
 		TEST_METHOD(重建)
 		{
-			PckFile::ReBuild("E:\\诛仙3\\element\\models.pck", "Z:\\new.pck", true);
+			//PckFile::ReBuild("E:\\诛仙3\\element\\gfx.pck", "Z:\\new.pck", true);
+			Pck_ReBuild("E:\\诛仙3\\element\\gfx.pck", "Z:\\new.pck", true);
 		}
 
 		TEST_METHOD(从目录创建)

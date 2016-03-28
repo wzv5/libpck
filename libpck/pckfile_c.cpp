@@ -9,8 +9,9 @@ struct _PckPtrHolder
 	std::shared_ptr<PckFile> ptr;
 };
 
-bool _PckLastError = false;
-char _PckLastErrorBuffer[1024];
+// 使用线程局部存储来避免多线程冲突
+thread_local bool _PckLastError = false;
+thread_local char _PckLastErrorBuffer[1024];
 
 #define PCK_SETLASTERROR()											\
 	strcpy(_PckLastErrorBuffer, e.what());							\
