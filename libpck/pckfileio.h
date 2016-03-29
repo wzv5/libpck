@@ -217,7 +217,10 @@ public:
 			else
 			{
 				// 数据跨越pck和pkx
-				m_inpkx = true;
+				if (m_haspkx)
+					m_inpkx = true;
+				else
+					throw std::runtime_error("读取文件失败");
 				Read((char*)buf + nread, len - nread);
 			}
 		}
