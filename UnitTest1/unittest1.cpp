@@ -33,6 +33,12 @@ namespace UnitTest1
 			Assert::IsTrue(&item1 == &item2);
 		}
 
+		TEST_METHOD(获得文件对象_不规范的文件名格式)
+		{
+			auto& item1 = pck->GetSingleFileItem("//gfx\\\\//version.sw");
+			Logger::WriteMessage(item1.GetFileName());
+		}
+
 		TEST_METHOD(统计信息)
 		{
 			stringstream ss;

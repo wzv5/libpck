@@ -18,6 +18,7 @@
 #include "pckitem.h"
 #include "pckfileio.h"
 #include "pckpendingitem.h"
+#include "pckhelper.h"
 
 class PckFile::PckFileImpl
 {
@@ -75,7 +76,15 @@ std::shared_ptr<PckFile> PckFile::Create(const std::string& filename, bool overw
 	auto pck = std::shared_ptr<PckFile>(new PckFile());
 	auto& p = pck->pImpl;
 	p->m_file.Create(filename.c_str(), overwrite);
+	p->m_head.dwHeadCheckHead = PCK_HEAD_VERIFY1;
+	p->m_head.dwHeadCheckTail = PCK_HEAD_VERIFY2;
 	p->m_head.dwPckSize = sizeof(_PckHead) + sizeof(_PckTail);
+	p->m_tail.dwIndexTableCheckHead = PCK_TAIL_VERIFY1;
+	p->m_tail.dwIndexTableCheckTail = PCK_TAIL_VERIFY2;
+	p->m_tail.dwVersion1 = p->m_tail.dwVersion2 = PCK_VERSION;
+	memset(p->m_tail.szAdditionalInfo, 0, 256);
+	strcpy(p->m_tail.szAdditionalInfo + 4, PCK_ADDITIONAL_INFO);
+	strcat(p->m_tail.szAdditionalInfo + 4, PCK_ADDITIONAL_INFO_STSM);
 	p->m_indextableaddr = sizeof(_PckHead);
 	return std::move(pck);
 }
@@ -87,17 +96,11 @@ uint32_t PckFile::GetFileCount() const noexcept
 
 const PckItem& PckFile::GetSingleFileItem(const std::string& filename) const
 {
-	using namespace StringHelper;
+	auto s = NormalizePckFileName(filename);
 	for (auto i = pImpl->m_items.begin(); i != pImpl->m_items.end(); ++i)
 	{
 		std::string s1 = std::string(i->GetFileName());
-		ReplaceAll<std::string>(s1, "/", "\\");
-
-		std::string s2 = std::string(filename);
-		ReplaceAll<std::string>(s2, "/", "\\");
-		Trim(s1);
-		Trim(s2);
-		if (CompareIgnoreCase(s1, s2) == 0)
+		if (StringHelper::CompareIgnoreCase(s1, s) == 0)
 		{
 			return *i;
 		}
@@ -184,23 +187,7 @@ uint32_t PckFile::Extract_if(const std::string& directory,
 {
 	// 由于pck内部保存的文件名使用gbk编码，linux可能乱码
 	// 如果当前系统不支持GBK编码，这行将抛出异常
-	std::locale loc;
-	try
-	{
-		loc = std::locale("zh_CN.GBK");  // linux格式
-	}
-	catch (...)
-	{
-		try
-		{
-			loc = std::locale("zh-CN");  // Windows格式
-		}
-		catch (...)
-		{
-			throw std::runtime_error("当前系统不支持GBK编码");
-		}
-		
-	}
+	std::locale loc = StringHelper::GetGBKLocale();
 
 	// 线程数，等于CPU线程数
 	uint32_t nthread = std::thread::hardware_concurrency();
@@ -450,19 +437,15 @@ void PckFile::CommitTransaction(ProcessCallback callback)
 
 void PckFile::AddItem(const void* buf, size_t len, const std::string& filename)
 {
-	const PckItem* pitem = nullptr;
+	auto s = NormalizePckFileName(filename);
 	try
 	{
-		pitem = &GetSingleFileItem(filename);
+		UpdateItem(GetSingleFileItem(s), buf, len);
 	}
 	catch (...)
 	{
-		pImpl->AddPendingItem(std::make_unique<PckPendingItem_AddBuffer>(filename, buf, len));
-		return;
+		pImpl->AddPendingItem(std::make_unique<PckPendingItem_AddBuffer>(s, buf, len));
 	}
-	
-	// 如果已有该文件名，则转换为修改操作
-	UpdateItem(*pitem, buf, len);
 }
 
 void PckFile::AddItem(const PckItem& item)
@@ -477,20 +460,15 @@ void PckFile::AddItem(const PckItem& item)
 
 void PckFile::AddItem(const std::string& diskfilename, const std::string& pckfilename)
 {
-	const PckItem* pitem = nullptr;
+	auto s = NormalizePckFileName(pckfilename);
 	try
 	{
-		pitem = &GetSingleFileItem(pckfilename);
+		UpdateItem(GetSingleFileItem(s), diskfilename);
 	}
 	catch (...)
 	{
-		pImpl->AddPendingItem(std::make_unique<PckPendingItem_AddFile>(pckfilename, diskfilename));
-		return;
+		pImpl->AddPendingItem(std::make_unique<PckPendingItem_AddFile>(s, diskfilename));
 	}
-
-	// 如果已有该文件名，则转换为修改操作
-	UpdateItem(*pitem, diskfilename);
-	
 }
 
 void PckFile::DeleteItem(const PckItem& item)
@@ -500,7 +478,7 @@ void PckFile::DeleteItem(const PckItem& item)
 
 void PckFile::RenameItem(const PckItem& item, const std::string& newname)
 {
-	pImpl->AddPendingItem(std::make_unique<PckPendingItem_Rename>(item, newname));
+	pImpl->AddPendingItem(std::make_unique<PckPendingItem_Rename>(item, NormalizePckFileName(newname)));
 }
 
 void PckFile::UpdateItem(const PckItem& item, const void* buf, size_t len)
@@ -613,13 +591,14 @@ size_t PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
 			memcpy(&pindex, buf.data(), len1);
 		}
 	}
+	auto s = NormalizePckFileName(pindex->szFilename);
+	memset(pindex->szFilename, 0, 256);
+	strcpy(pindex->szFilename, s.c_str());
 	return len1 + 8;
 }
 
 void PckFile::PckFileImpl::WriteHead()
 {
-	m_head.dwHeadCheckHead = PCK_HEAD_VERIFY1;
-	m_head.dwHeadCheckTail = PCK_HEAD_VERIFY2;
 	m_head.dwPckSize = m_indextableaddr + m_indextablesize + sizeof(_PckTail);
 	m_file.Seek(0);
 	m_file.Write(&m_head, sizeof(_PckHead));
@@ -627,14 +606,8 @@ void PckFile::PckFileImpl::WriteHead()
 
 void PckFile::PckFileImpl::WriteTail()
 {
-	m_tail.dwIndexTableCheckHead = PCK_TAIL_VERIFY1;
-	m_tail.dwIndexTableCheckTail = PCK_TAIL_VERIFY2;
 	m_tail.dwFileCount = m_items.size();
 	m_tail.dwIndexValue = m_indextableaddr ^ PCK_ADDR_MASK;
-	m_tail.dwVersion1 = m_tail.dwVersion2 = PCK_VERSION;
-	memset(m_tail.szAdditionalInfo, 0, 256);
-	strcpy(m_tail.szAdditionalInfo + 4, PCK_ADDITIONAL_INFO);
-	strcat(m_tail.szAdditionalInfo + 4, PCK_ADDITIONAL_INFO_STSM);
 	m_file.Seek(m_head.dwPckSize - sizeof(_PckTail));
 	m_file.Write(&m_tail, sizeof(_PckTail));
 }
@@ -691,12 +664,6 @@ void PckFile::PckFileImpl::EnumDir(filesystem::path dir, filesystem::path base, 
 		{
 			auto diskpath = StringHelper::T2A(i->path().c_str());
 			auto pckpath = StringHelper::T2A((base / i->path().filename()).c_str());
-			StringHelper::ReplaceAll<std::string>(diskpath, "\\", "/");
-			StringHelper::ReplaceAll<std::string>(pckpath, "/", "\\");
-			if (pckpath[0] == '/')
-			{
-				pckpath = pckpath.substr(1);
-			}
 			callback(diskpath, pckpath);
 		}
 		else if (filesystem::is_directory(status))

@@ -157,4 +157,36 @@ namespace StringHelper
 	{
 		return s;
 	}
+
+	inline locale GetGBKLocale()
+	{
+		locale loc;
+		try
+		{
+			loc = std::locale("zh_CN.GBK");  // linux格式
+		}
+		catch (...)
+		{
+			try
+			{
+				loc = std::locale("zh-CN");  // Windows格式
+			}
+			catch (...)
+			{
+				throw std::runtime_error("当前系统不支持GBK编码");
+			}
+
+		}
+		return std::move(loc);
+	}
+
+	inline string A2GBK(const std::string& s)
+	{
+		return W2A(A2W(s), GetGBKLocale());
+	}
+
+	inline string GBK2A(const std::string& s)
+	{
+		return W2A(A2W(s, GetGBKLocale()));
+	}
 }
