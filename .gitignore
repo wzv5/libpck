@@ -210,3 +210,9 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+
+*.o
+pckmain
+/libpck.VC.opendb
+[Rr]elease_dll/
+[Dd]ebug_dll/
