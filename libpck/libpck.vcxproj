@@ -124,34 +124,36 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>.\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\zlib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'">
-    <IncludePath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>.\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\zlib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>.\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\zlib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_dll|Win32'">
-    <IncludePath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>.\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\zlib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\include;$(IncludePath)</IncludePath>
+    <IncludePath>.\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\zlib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_dll|x64'">
-    <IncludePath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>.\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\zlib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\include;$(IncludePath)</IncludePath>
+    <IncludePath>.\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\zlib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_dll|x64'">
-    <IncludePath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\快盘\Code\C\源码\zlib\zlib-1.2.8\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>.\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\zlib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

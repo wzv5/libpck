@@ -3,7 +3,7 @@
 #include <experimental/filesystem>
 namespace filesystem = std::experimental::filesystem;
 
-#ifdef _WINDOWS
+#if defined(_WINDOWS) || defined(_WIN32)
 #include <io.h>
 #define ftruncate	_chsize
 #define fileno		_fileno
