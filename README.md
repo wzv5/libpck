@@ -15,16 +15,19 @@ libpck
 
 虽然这是一个练习性质的作品，但我依然努力让它更稳定、更好用，同时也会一直维护下去。
 
-（最后，我还没有工作，求职。）
+下载
+====
+已编译的dll及易语言模块：<https://github.com/wzv5/libpck/releases/latest>
 
-编译方式
-=======
+编译
+====
 
 由于使用了最新的C++标准，所以编译器也必须用最新的。
 
 本代码在 VS2015（Windows）、GCC 5.3（Arch Linux）测试通过，低于此版本的编译器可能会出错。
 
-##使用 VS2015 编译
+使用 VS2015 编译
+----------------
 
 ```
 git clone https://github.com/wzv5/libpck
@@ -35,8 +38,8 @@ git clone https://github.com/wzv5/libpck
 
 默认静态链接 zlib，即链接到 ```zlibstat.lib```，如果想要动态链接 zlib，可以自己改为链接到 ```zlibwapi.lib```。内置的 zlib 使用 ```ZLIB_WINAPI``` 进行编译。
 
-使用方式
-=======
+使用
+====
 
 推荐使用C++接口，只需要 ```#include "pckfile.h"``` 即可，可选 ```#include "pckitem.h"```。
 
@@ -64,11 +67,11 @@ PckFile::ReBuild("old.pck", "new.pck");
 以后的打算
 =========
 
-- 所有内部字符串全部使用 Unicode 编码
 - 对压缩部分进行多线程改造
 - 添加更多的辅助函数，如模糊搜索、从目录或其他压缩包更新pck
 - 添加额外的哈希表存储文件名，实现更快的基于文件名的搜索
 - 添加GUI、CLI编辑工具
+- ~~所有内部字符串全部使用 Unicode 编码（貌似在Linux中这样干吃力不讨好？）~~
 
 感谢
 =====

@@ -48,19 +48,14 @@ public:
 		_setfilename(filename);
 		try
 		{
-			// 先尝试以只写模式打开，如果文件存在将失败
-			_openpck("wb");
-			// 如果打开成功，则删除多余的pkx文件
-			remove(m_pkxname.c_str());
-			if (overwrite)
+			if (filesystem::exists(m_pckname) && !overwrite)
 			{
-				// 如果只写模式打开失败，且允许重写
-				_openpck("rb+");
-				if (filesystem::exists(m_pkxname))
-				{
-					_openpkx("rb+");
-				}
+				throw std::runtime_error("创建文件失败，文件已存在，且不允许重写");
 			}
+			// 先删除现有的文件
+			remove(m_pckname.c_str());
+			remove(m_pkxname.c_str());
+			_openpck("wb");
 			m_readonly = false;
 		}
 		catch (...)
