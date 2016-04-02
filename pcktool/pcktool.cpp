@@ -34,7 +34,7 @@ bool ListAll(const char* pckname);
 "如果行首为“#”，则该行为注释，不作为列表内容。\n" \
 "\n" \
 "压缩：\n" \
-"{0} -c output.pck input.pck.files\n" \
+"{0} -c output.pck inputdir\n" \
 "\n" \
 "列出所有文件：\n" \
 "{0} -l input.pck\n" \
