@@ -32,11 +32,12 @@ libpck
 ```
 git clone https://github.com/wzv5/libpck
 ```
-打开 ```libpck.sln```，选择想要编译的版本： 
-- Release：编译静态库
-- Release_dll：编译动态库
+打开 ```libpck.sln```，其中包含以下项目： 
+- libpck：编译静态库
+- libpck.dll：编译C接口的动态库
+- pcktool：一个简单的控制台程序
 
-默认静态链接 zlib，即链接到 ```zlibstat.lib```，如果想要动态链接 zlib，可以自己改为链接到 ```zlibwapi.lib```。内置的 zlib 使用 ```ZLIB_WINAPI``` 进行编译。
+内置的 zlib 使用 VS2015 Update 2 编译，如果 VS 版本不同，请自己编译 zlib 并替换相关的文件。
 
 使用
 ====
@@ -70,7 +71,7 @@ PckFile::ReBuild("old.pck", "new.pck");
 - 对压缩部分进行多线程改造
 - 添加更多的辅助函数，如模糊搜索、从目录或其他压缩包更新pck
 - 添加额外的哈希表存储文件名，实现更快的基于文件名的搜索
-- 添加GUI、CLI编辑工具
+- 添加GUI编辑工具
 - ~~所有内部字符串全部使用 Unicode 编码（貌似在Linux中这样干吃力不讨好？）~~
 
 感谢
