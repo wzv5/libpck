@@ -213,6 +213,5 @@ ModelManifest.xml
 
 *.o
 pckmain
-/libpck.VC.opendb
-[Rr]elease_dll/
-[Dd]ebug_dll/
+*.VC.opendb
+*.VC.db

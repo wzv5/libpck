@@ -305,6 +305,7 @@
 #  endif
 #endif
 
+#define ZLIB_WINAPI
 #if defined(WINDOWS) || defined(WIN32)
    /* If building or using zlib as a DLL, define ZLIB_DLL.
     * This is not mandatory, but it offers a little performance increase.
