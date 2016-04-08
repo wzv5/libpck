@@ -1,3 +1,5 @@
+#define ZLIB_WINAPI
+
 /* zconf.h -- configuration of the zlib compression library
  * Copyright (C) 1995-2013 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -305,7 +307,6 @@
 #  endif
 #endif
 
-#define ZLIB_WINAPI
 #if defined(WINDOWS) || defined(WIN32)
    /* If building or using zlib as a DLL, define ZLIB_DLL.
     * This is not mandatory, but it offers a little performance increase.
