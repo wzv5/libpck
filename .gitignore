@@ -215,3 +215,4 @@ ModelManifest.xml
 pckmain
 *.VC.opendb
 *.VC.db
+*.lst

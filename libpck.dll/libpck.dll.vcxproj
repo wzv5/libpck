@@ -24,9 +24,6 @@
   <ItemGroup>
     <ResourceCompile Include="libpck.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="resource.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A466C5B2-9E42-41FB-9C97-606FDB3BDEA4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
