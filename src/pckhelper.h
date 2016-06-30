@@ -19,5 +19,8 @@ inline std::string NormalizePckFileName(const std::string& filename)
 	ret.erase(0, ret.find_first_not_of(" \r\n\t\\"));
 	ret.erase(ret.find_last_not_of(" \r\n\t\\") + 1);
 
+	if (ret.size() > 255)
+		throw std::runtime_error("文件名长度超出限制");
+
 	return std::move(ret);
 }
