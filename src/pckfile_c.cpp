@@ -1,4 +1,4 @@
-#include "pckfile.h"
+ï»¿#include "pckfile.h"
 #include "pckfile_c.h"
 #include "pckitem.h"
 
@@ -9,7 +9,7 @@ struct _PckPtrHolder
 	std::shared_ptr<PckFile> ptr;
 };
 
-// Ê¹ÓÃÏß³Ì¾Ö²¿´æ´¢À´±ÜÃâ¶àÏß³Ì³åÍ»
+// ä½¿ç”¨çº¿ç¨‹å±€éƒ¨å­˜å‚¨æ¥é¿å…å¤šçº¿ç¨‹å†²çª
 thread_local bool _PckLastError = false;
 thread_local char _PckLastErrorBuffer[1024];
 

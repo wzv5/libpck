@@ -1,6 +1,6 @@
-#pragma once
+﻿#pragma once
 
-// C���Խӿڣ����ڿ������Ե���
+// C语言接口，用于跨编程语言调用
 
 #include <cstdint>
 

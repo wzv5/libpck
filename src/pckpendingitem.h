@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <cstdint>
 #include <string>
@@ -23,7 +23,7 @@ public:
 
 	PckPendingActionType GetType() { return m_action; }
 
-	// ÔÚÓÃÍêºóËæ¼´µ÷ÓÃ£¬ÊÍ·ÅÁÙÊ±Êı¾İ£¬±ÜÃâÖØ½¨²Ù×÷Ê±ÄÚ´æÒç³ö
+	// åœ¨ç”¨å®Œåéšå³è°ƒç”¨ï¼Œé‡Šæ”¾ä¸´æ—¶æ•°æ®ï¼Œé¿å…é‡å»ºæ“ä½œæ—¶å†…å­˜æº¢å‡º
 	virtual void Release() = 0;
 
 private:
@@ -80,7 +80,7 @@ public:
 			auto ret = compress2(m_compressdata.data(), &len, m_data.data(), m_data.size(), level);
 			if (ret != Z_OK)
 			{
-				throw std::runtime_error("Ñ¹ËõÊı¾İÊ§°Ü");
+				throw std::runtime_error("å‹ç¼©æ•°æ®å¤±è´¥");
 			}
 			m_compressdata.resize(len);
 		}
@@ -114,7 +114,7 @@ public:
 			std::ifstream f(m_diskfile.c_str(), std::ios::in | std::ios::binary);
 			if (!f.is_open())
 			{
-				throw std::runtime_error("´ò¿ªÎÄ¼şÊ§°Ü");
+				throw std::runtime_error("æ‰“å¼€æ–‡ä»¶å¤±è´¥");
 			}
 			f.seekg(0, std::ios::end);
 			auto len = f.tellg();
@@ -122,7 +122,7 @@ public:
 			m_data.resize(len);
 			if (f.read((char*)m_data.data(), len).fail())
 			{
-				throw std::runtime_error("¶ÁÈ¡ÎÄ¼şÊ§°Ü");
+				throw std::runtime_error("è¯»å–æ–‡ä»¶å¤±è´¥");
 			}
 		}
 		return m_data.size();
@@ -142,7 +142,7 @@ public:
 			auto ret = compress2(m_compressdata.data(), &len, m_data.data(), m_data.size(), level);
 			if (ret != Z_OK)
 			{
-				throw std::runtime_error("Ñ¹ËõÊı¾İÊ§°Ü");
+				throw std::runtime_error("å‹ç¼©æ•°æ®å¤±è´¥");
 			}
 			m_compressdata.resize(len);
 		}
@@ -278,7 +278,7 @@ public:
 			auto ret = compress2(m_compressdata.data(), &len, data.data(), data.size(), level);
 			if (ret != Z_OK)
 			{
-				throw std::runtime_error("Ñ¹ËõÊı¾İÊ§°Ü");
+				throw std::runtime_error("å‹ç¼©æ•°æ®å¤±è´¥");
 			}
 			m_compressdata.resize(len);
 		}
@@ -334,7 +334,7 @@ public:
 			std::ifstream f(m_filename.c_str(), std::ios::in | std::ios::binary);
 			if (!f.is_open())
 			{
-				throw std::runtime_error("´ò¿ªÎÄ¼şÊ§°Ü");
+				throw std::runtime_error("æ‰“å¼€æ–‡ä»¶å¤±è´¥");
 			}
 			f.seekg(0, std::ios::end);
 			auto len = f.tellg();
@@ -342,7 +342,7 @@ public:
 			m_data.resize(len);
 			if (f.read((char*)m_data.data(), len).fail())
 			{
-				throw std::runtime_error("¶ÁÈ¡ÎÄ¼şÊ§°Ü");
+				throw std::runtime_error("è¯»å–æ–‡ä»¶å¤±è´¥");
 			}
 		}
 		return m_data;

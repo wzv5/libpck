@@ -1,4 +1,4 @@
-libpck
+﻿libpck
 ======
 
 这是一个跨平台的、纯C++实现的、基于最新C++11、14标准（包括部分C++17标准）的诛仙pck文件包处理库。
@@ -36,8 +36,6 @@ git clone https://github.com/wzv5/libpck
 - libpck：编译静态库
 - libpck.dll：编译C接口的动态库
 - pcktool：一个简单的控制台程序
-
-内置的 zlib 使用 VS2015 Update 2 编译，如果 VS 版本不同，请自己编译 zlib 并替换相关的文件。
 
 使用
 ====
@@ -80,4 +78,4 @@ stsm/liqf/李秋枫 开源的 [WinPCK](http://bbs.duowan.com/thread-27298877-1-1
 
 License
 =======
-MIT
+[MIT](http://opensource.org/licenses/MIT)

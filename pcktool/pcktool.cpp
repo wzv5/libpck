@@ -39,7 +39,7 @@ bool ListAll(const char* pckname);
 "列出所有文件：\n" \
 "{0} -l input.pck\n" \
 "\n" \
-"感谢 stsm / liqf / 李秋枫 开源的WinPCK！\n"
+"感谢 stsm/liqf/李秋枫 开源的WinPCK！\n"
 
 int main(int argc, char* argv[])
 {
