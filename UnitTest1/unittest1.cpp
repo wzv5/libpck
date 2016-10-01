@@ -1,45 +1,50 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "CppUnitTest.h"
 #include <sstream>
 #include "../include/pckfile.h"
 #include "../include/pckitem.h"
 #include "../include/pckfile_c.h"
 #include "../include/stringhelper.h"
+#include <Windows.h>
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTest1
-{		
-	TEST_CLASS(PckºËĞÄ¹¦ÄÜ)
+{	
+	TEST_MODULE_INITIALIZE(ModuleInitialize)
+	{
+		system("copy /y test.pck test2.pck");
+	}
+
+	TEST_CLASS(Pckæ ¸å¿ƒåŠŸèƒ½)
 	{
 		shared_ptr<PckFile> pck;
 	public:
-		PckºËĞÄ¹¦ÄÜ()
+		Pckæ ¸å¿ƒåŠŸèƒ½()
 		{
-			pck = PckFile::Open("E:\\ÖïÏÉ3\\element\\gfx.pck");
-			//pck = PckFile::Open("Z:\\configs.pck");
+			pck = PckFile::Open("test.pck");
 		}
 
-		TEST_METHOD(»ñµÃÎÄ¼şÊı)
+		TEST_METHOD(è·å¾—æ–‡ä»¶æ•°)
 		{
 			stringstream ss;
-			ss << "ÎÄ¼şÊı£º" << pck->GetFileCount() << endl;
+			ss << "æ–‡ä»¶æ•°ï¼š" << pck->GetFileCount() << endl;
 			Logger::WriteMessage(ss.str().c_str());
 		}
 
-		TEST_METHOD(»ñµÃÎÄ¼ş¶ÔÏó)
+		TEST_METHOD(è·å¾—æ–‡ä»¶å¯¹è±¡)
 		{
 			auto& item1 = pck->GetSingleFileItem(0);
 			auto& item2 = pck->GetSingleFileItem(item1.GetFileName());
 			Assert::IsTrue(&item1 == &item2);
 		}
 
-		TEST_METHOD(»ñµÃÎÄ¼ş¶ÔÏó_²»¹æ·¶µÄÎÄ¼şÃû¸ñÊ½)
+		TEST_METHOD(è·å¾—æ–‡ä»¶å¯¹è±¡_ä¸è§„èŒƒçš„æ–‡ä»¶åæ ¼å¼)
 		{
-			auto& item1 = pck->GetSingleFileItem("//gfx\\\\//version.sw");
-			Logger::WriteMessage(item1.GetFileName());
+			auto& item1 = pck->GetSingleFileItem("//abc\\\\//123.txt");
+			Assert::AreEqual("abc\\123.txt", item1.GetFileName());
 		}
 
-		TEST_METHOD(Í³¼ÆĞÅÏ¢)
+		TEST_METHOD(ç»Ÿè®¡ä¿¡æ¯)
 		{
 			stringstream ss;
 			size_t s1, s2, s3, s4, s5;
@@ -48,87 +53,88 @@ namespace UnitTest1
 			s3 = pck->GetRedundancySize();
 			s4 = pck->GetFileSize();
 			s5 = pck->GetIndexTableSize();
-			ss << "ÎÄ¼ş´óĞ¡£º" << s4 / 1024 / 1024 << " MB" << endl;
-			ss << "Êı¾İÇø£º" << s1 / 1024 / 1024 << " MB" << endl;
-			ss << "½âÑ¹ºó£º" << s2 / 1024 / 1024 << " MB" << endl;
-			ss << "Ë÷Òı±í£º" << s5 / 1024 << " KB" << endl;
-			ss << "ÈßÓàÊı¾İ£º" << s3 / 1024 / 1024 << " MB" << endl;
-			ss << "Ñ¹ËõÂÊ£º" << (double)s1 / s2 << endl;
-			ss << "ÈßÓàÂÊ£º" << (double)s3 / s4 << endl;
+			ss << "æ–‡ä»¶å¤§å°ï¼š" << s4 / 1024 / 1024 << " MB" << endl;
+			ss << "æ•°æ®åŒºï¼š" << s1 / 1024 / 1024 << " MB" << endl;
+			ss << "è§£å‹åï¼š" << s2 / 1024 / 1024 << " MB" << endl;
+			ss << "ç´¢å¼•è¡¨ï¼š" << s5 / 1024 << " KB" << endl;
+			ss << "å†—ä½™æ•°æ®ï¼š" << s3 / 1024 / 1024 << " MB" << endl;
+			ss << "å‹ç¼©ç‡ï¼š" << (double)s1 / s2 << endl;
+			ss << "å†—ä½™ç‡ï¼š" << (double)s3 / s4 << endl;
 			Logger::WriteMessage(ss.str().c_str());
 		}
 
-		TEST_METHOD(½âÑ¹)
+		TEST_METHOD(è§£å‹)
 		{
-			pck->Extract("Z:\\");
+			pck->Extract("./temp");
 		}
 	};
 
-	TEST_CLASS(ĞÂ½¨PCK)
+	TEST_CLASS(æ–°å»ºPCK)
 	{
 		shared_ptr<PckFile> pck;
 	public:
-		ĞÂ½¨PCK()
+		æ–°å»ºPCK()
 		{
-			pck = PckFile::Create("Z:\\test.pck", true);
+			pck = PckFile::Create("new.pck", true);
 		}
 
-		TEST_METHOD(Ìí¼ÓÎÄ¼ş)
+		TEST_METHOD(æ·»åŠ æ–‡ä»¶)
 		{
-			pck->AddItem("D:\\User\\Desktop\\²âÊÔ.txt", "test\\²âÊÔ.txt");
+			pck->AddItem("abc123", 6, "abc/123.txt");
 		}
 	};
 
-	TEST_CLASS(ĞŞ¸ÄPCK)
+	TEST_CLASS(ä¿®æ”¹PCK)
 	{
 		shared_ptr<PckFile> pck;
 	public:
-		ĞŞ¸ÄPCK()
+		ä¿®æ”¹PCK()
 		{
-			pck = PckFile::Open("Z:\\configs.pck", false);
+			pck = PckFile::Open("test2.pck", false);
 		}
 
-		TEST_METHOD(Ìí¼ÓÎÄ¼ş)
+		TEST_METHOD(æ·»åŠ æ–‡ä»¶)
 		{
 			stringstream ss;
-			ss << "Ìí¼ÓÎÄ¼şÇ°£º" << endl;
-			ss << "ÎÄ¼şÊı£º" << pck->GetFileCount() << endl;
-			ss << "ÎÄ¼ş´óĞ¡£º" << pck->GetFileSize() << endl;
-			ss << "Êı¾İÁ¿£º" << pck->GetTotalCompressDataSize() << endl;
-			ss << "ÈßÓà£º" << pck->GetRedundancySize() << endl;
-			ss << "Ë÷Òı±í£º" << pck->GetIndexTableSize() << endl;
+			ss << "æ·»åŠ æ–‡ä»¶å‰ï¼š" << endl;
+			ss << "æ–‡ä»¶æ•°ï¼š" << pck->GetFileCount() << endl;
+			ss << "æ–‡ä»¶å¤§å°ï¼š" << pck->GetFileSize() << endl;
+			ss << "æ•°æ®é‡ï¼š" << pck->GetTotalCompressDataSize() << endl;
+			ss << "å†—ä½™ï¼š" << pck->GetRedundancySize() << endl;
+			ss << "ç´¢å¼•è¡¨ï¼š" << pck->GetIndexTableSize() << endl;
 
-			pck->AddItem("D:\\User\\Desktop\\²âÊÔ.txt", "test\\²âÊÔ.txt");
+			pck->AddItem("abc123", 6, "abc/123.txt");
 
-			ss << "Ìí¼ÓÎÄ¼şºó£º" << endl;
-			ss << "ÎÄ¼şÊı£º" << pck->GetFileCount() << endl;
-			ss << "ÎÄ¼ş´óĞ¡£º" << pck->GetFileSize() << endl;
-			ss << "Êı¾İÁ¿£º" << pck->GetTotalCompressDataSize() << endl;
-			ss << "ÈßÓà£º" << pck->GetRedundancySize() << endl;
-			ss << "Ë÷Òı±í£º" << pck->GetIndexTableSize() << endl;
+			ss << "æ·»åŠ æ–‡ä»¶åï¼š" << endl;
+			ss << "æ–‡ä»¶æ•°ï¼š" << pck->GetFileCount() << endl;
+			ss << "æ–‡ä»¶å¤§å°ï¼š" << pck->GetFileSize() << endl;
+			ss << "æ•°æ®é‡ï¼š" << pck->GetTotalCompressDataSize() << endl;
+			ss << "å†—ä½™ï¼š" << pck->GetRedundancySize() << endl;
+			ss << "ç´¢å¼•è¡¨ï¼š" << pck->GetIndexTableSize() << endl;
 
 			Logger::WriteMessage(ss.str().c_str());
-			auto data = pck->GetSingleFileItem("test\\²âÊÔ.txt").GetData();
+			auto data = pck->GetSingleFileItem("abc/123.txt").GetData();
 			auto pstr = (char*)data.data();
-			Logger::WriteMessage(pstr);
+			Assert::AreEqual("abc123", pstr);
 		}
 
-		TEST_METHOD(É¾³ıÎÄ¼ş)
+		TEST_METHOD(åˆ é™¤æ–‡ä»¶)
 		{
-			pck->DeleteItem((*pck)[0]);
+			pck->DeleteItem((*pck)["abc/del.txt"]);
 		}
 	};
 
-	TEST_CLASS(´´½¨PCK)
+	/*
+	TEST_CLASS(åˆ›å»ºPCK)
 	{
 	public:
-		TEST_METHOD(ÖØ½¨)
+		TEST_METHOD(é‡å»º)
 		{
-			//PckFile::ReBuild("E:\\ÖïÏÉ3\\element\\gfx.pck", "Z:\\new.pck", true);
-			Pck_ReBuild("E:\\ÖïÏÉ3\\element\\gfx.pck", "Z:\\new.pck", true);
+			//PckFile::ReBuild("E:\\è¯›ä»™3\\element\\gfx.pck", "Z:\\new.pck", true);
+			Pck_ReBuild("E:\\è¯›ä»™3\\element\\gfx.pck", "Z:\\new.pck", true);
 		}
 
-		TEST_METHOD(´ÓÄ¿Â¼´´½¨)
+		TEST_METHOD(ä»ç›®å½•åˆ›å»º)
 		{
 			PckFile::CreateFromDirectory("Z:\\test.pck", "Z:\\npm", false, true, [](auto i, auto t) {
 				stringstream ss;
@@ -138,20 +144,21 @@ namespace UnitTest1
 			});
 		}
 	};
+	*/
 
-	TEST_CLASS(¸¨Öúº¯Êı)
+	TEST_CLASS(è¾…åŠ©å‡½æ•°)
 	{
 	public:
-#define TESTSTRA "1234°¡²»´íµÄabcd"
-#define TESTSTRW L"1234°¡²»´íµÄabcd"
-		TEST_METHOD(±àÂë×ª»»_A2W)
+#define TESTSTRA "1234å•Šä¸é”™çš„abcd"
+#define TESTSTRW L"1234å•Šä¸é”™çš„abcd"
+		TEST_METHOD(ç¼–ç è½¬æ¢_A2W)
 		{
 			auto loc = std::locale("chinese-simplified_china.936");
 			std::string s = TESTSTRA;
 			Assert::AreEqual(StringHelper::A2W(s, loc).c_str(), TESTSTRW);
 		}
 
-		TEST_METHOD(±àÂë×ª»»_W2A)
+		TEST_METHOD(ç¼–ç è½¬æ¢_W2A)
 		{
 			auto loc = std::locale("zh-CN");
 			std::wstring s = TESTSTRW;

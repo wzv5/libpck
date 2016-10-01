@@ -1,18 +1,18 @@
-#pragma once
+ï»¿#pragma once
 
 #include <string>
 #include <vector>
 #include <algorithm>
 
-// °ÑÎÄ¼şÃû±äÎªpckÄÚµÄ±ê×¼¸ñÊ½
+// æŠŠæ–‡ä»¶åå˜ä¸ºpckå†…çš„æ ‡å‡†æ ¼å¼
 inline std::string NormalizePckFileName(const std::string& filename)
 {
 	std::vector<char> buf(filename.begin(), filename.end());
 	
-	// °ÑËùÓĞ '/' Ìæ»»Îª '\'
+	// æŠŠæ‰€æœ‰ '/' æ›¿æ¢ä¸º '\'
 	std::replace_if(buf.begin(), buf.end(), [](auto i) { return i == '/'; }, '\\');
 	
-	// °Ñ¶à¸ö '\' Ìæ»»Îªµ¥¸ö
+	// æŠŠå¤šä¸ª '\' æ›¿æ¢ä¸ºå•ä¸ª
 	buf.resize(std::distance(buf.begin(), std::unique(buf.begin(), buf.end(), [](auto i, auto j) { return i == j && i == '\\'; })));
 
 	std::string ret(buf.begin(), buf.end());
@@ -20,7 +20,7 @@ inline std::string NormalizePckFileName(const std::string& filename)
 	ret.erase(ret.find_last_not_of(" \r\n\t\\") + 1);
 
 	if (ret.size() > 255)
-		throw std::runtime_error("ÎÄ¼şÃû³¤¶È³¬³öÏŞÖÆ");
+		throw std::runtime_error("æ–‡ä»¶åé•¿åº¦è¶…å‡ºé™åˆ¶");
 
 	return std::move(ret);
 }

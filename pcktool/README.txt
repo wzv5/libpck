@@ -1,15 +1,15 @@
-��ѹ�����ļ���
+﻿解压所有文件：
 pcktool -x input.pck
 
-��ѹָ���ļ���
-pcktool -x input.pck �ų��б�.txt �����б�.txt
-����ԡ�\����β����ΪĿ¼������Ϊ�ļ���
-�������Ϊ��#���������Ϊע�ͣ�����Ϊ�б����ݡ�
+解压指定文件：
+pcktool -x input.pck 排除列表.txt 保留列表.txt
+如果以“\”结尾，则为目录，否则为文件。
+如果行首为“#”，则该行为注释，不作为列表内容。
 
-ѹ����
+压缩：
 pcktool -c output.pck inputdir
 
-�г������ļ���
+列出所有文件：
 pcktool -l input.pck
 
-��л stsm / liqf / ����� ��Դ��WinPCK��
+感谢 stsm / liqf / 李秋枫 开源的WinPCK！

@@ -1,4 +1,4 @@
-CFLAGS = -std=c++14 -c
+﻿CFLAGS = -std=c++14 -c
 
 pckmain: pckfile.o pckitem.o pckmain.o
 	g++ -o pckmain pckfile.o pckitem.o pckmain.o -lz -pthread -lstdc++fs
