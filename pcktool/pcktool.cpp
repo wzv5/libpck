@@ -23,7 +23,7 @@ bool ExtractList(const char* pckname, const char* excludelist, const char* keepl
 bool CompressDir(const char* pckname, const char* dirname);
 bool ListAll(const char* pckname);
 
-#define HELPSTR "{0} 2016.04.02\n" \
+#define HELPSTR "{0} 2017.04.08\n" \
 "\n" \
 "解压所有文件：\n" \
 "{0} -x input.pck\n" \
@@ -237,11 +237,11 @@ bool ListAll(const char* pckname)
 		auto pck = PckFile::Open(pckname);
 		printf("文件数：%d\n", pck->GetFileCount());
 		printf("================\n");
-		pck->Extract_if("./", [](const PckItem& item) {
-			printf(item.GetFileName());
+		for (size_t i = 0; i < pck->GetFileCount(); i++)
+		{
+			printf(pck->GetSingleFileItem(i).GetFileName());
 			printf("\n");
-			return false;
-		});
+		}
 		ret = true;
 	}
 	catch (const std::exception& e)
