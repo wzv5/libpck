@@ -20,7 +20,22 @@
     <ClInclude Include="..\include\pckitem.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\stringhelper.h">
+    <ClInclude Include="..\src\myfilesystem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\pckfileio.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\pckhelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\pckpendingitem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\pckdef.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\stringhelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
