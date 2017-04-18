@@ -37,6 +37,11 @@ git clone https://github.com/wzv5/libpck
 - libpck.dll：编译C接口的动态库
 - pcktool：一个简单的控制台程序
 
+使用 boost 代替 C++17 标准库中的 filesystem
+------------------------------------------
+
+默认使用 C++17 标准库中的 filesystem（还处于试验阶段），如果想要使用 boost，可以 `#define USE_BOOST` ，同时在项目属性中添加 boost 的相关目录。
+
 使用
 ====
 

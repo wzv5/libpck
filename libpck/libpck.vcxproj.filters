@@ -32,10 +32,10 @@
     <ClInclude Include="..\src\pckpendingitem.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\pckdef.h">
+    <ClInclude Include="..\src\stringhelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\stringhelper.h">
+    <ClInclude Include="..\include\pckdef.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

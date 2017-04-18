@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\pckdef.h" />
     <ClInclude Include="..\include\pckfile.h" />
     <ClInclude Include="..\include\pckfile_c.h" />
     <ClInclude Include="..\include\pckitem.h" />
     <ClInclude Include="..\src\myfilesystem.h" />
-    <ClInclude Include="..\src\pckdef.h" />
     <ClInclude Include="..\src\pckfileio.h" />
     <ClInclude Include="..\src\pckhelper.h" />
     <ClInclude Include="..\src\pckpendingitem.h" />

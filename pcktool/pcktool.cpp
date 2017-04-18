@@ -12,7 +12,7 @@
 #include <experimental/filesystem>
 #include "../include/pckfile.h"
 #include "../include/pckitem.h"
-#include "../include/stringhelper.h"
+#include "../src/stringhelper.h"
 
 namespace filesystem = std::experimental::filesystem;
 
