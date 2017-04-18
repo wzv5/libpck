@@ -4,7 +4,7 @@
 #include "../include/pckfile.h"
 #include "../include/pckitem.h"
 #include "../include/pckfile_c.h"
-#include "../include/stringhelper.h"
+#include "../src/stringhelper.h"
 #include <Windows.h>
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
