@@ -1,9 +1,6 @@
 ﻿// pcktool.cpp : 定义控制台应用程序的入口点。
 //
 
-#pragma warning(disable: 4018)
-#pragma warning(disable: 4267)
-
 #include "stdafx.h"
 #include <string>
 #include <vector>
@@ -95,7 +92,7 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "错误：无效参数");
 	}
 
-    return ret;
+	return ret;
 }
 
 void PrintHelp(const char* s)

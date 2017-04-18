@@ -2,8 +2,6 @@
 #include "pckfile_c.h"
 #include "pckitem.h"
 
-#pragma warning(disable: 4267)
-
 struct _PckPtrHolder
 {
 	std::shared_ptr<PckFile> ptr;
