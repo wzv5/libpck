@@ -573,11 +573,11 @@ size_t PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
 	}
 	std::vector<char> buf(len1);
 	m_file.Read(buf.data(), len1);
-	uLongf destLen = PCK_INDEX_SIZE;
+	uLongf destLen = sizeof(_PckItemIndex);
 	auto ret = uncompress((Bytef*)pindex, &destLen, (Bytef*)buf.data(), len1);
 	if (ret != Z_OK)
 	{
-		if (len1 != PCK_INDEX_SIZE)
+		if (len1 != sizeof(_PckItemIndex))
 		{
 			throw std::runtime_error("解压文件索引失败");
 		}
@@ -586,6 +586,12 @@ size_t PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
 			memcpy(&pindex, buf.data(), len1);
 		}
 	}
+	/*
+	if (pindex->dwA | pindex->dwB | pindex->dwC | pindex->dwD | pindex->dwE != 0)
+	{
+		printf("!!!");
+	}
+	*/
 	auto s = NormalizePckFileName(pindex->szFilename);
 	memset(pindex->szFilename, 0, 256);
 	strcpy(pindex->szFilename, s.c_str());
@@ -603,6 +609,7 @@ void PckFile::PckFileImpl::WriteTail()
 {
 	m_tail.dwFileCount = m_items.size();
 	m_tail.dwIndexValue = m_indextableaddr ^ PCK_ADDR_MASK;
+	m_tail.dwUnknown1 = 0xffffffff;  //>!!! 必须
 	m_file.Seek(m_head.dwPckSize - sizeof(_PckTail));
 	m_file.Write(&m_tail, sizeof(_PckTail));
 }

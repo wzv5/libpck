@@ -9,6 +9,7 @@
 
 class PckItem;
 
+// 为保证运行效率，整个类都是非线程安全的！多线程操作请自己加锁！
 class PckFile : public std::enable_shared_from_this<PckFile>
 {
 private:
