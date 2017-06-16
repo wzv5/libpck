@@ -38,6 +38,9 @@
     <ClInclude Include="..\include\pckdef.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\pcktree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\pckfile.cpp">
@@ -47,6 +50,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\src\pckitem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pcktree.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -10,6 +10,7 @@
 #include "../include/pckfile.h"
 #include "../include/pckitem.h"
 #include "../src/stringhelper.h"
+#include "../include/pcktree.h"
 
 namespace filesystem = std::experimental::filesystem;
 
@@ -19,8 +20,9 @@ bool ExtractAll(const char* pckname);
 bool ExtractList(const char* pckname, const char* excludelist, const char* keeplist);
 bool CompressDir(const char* pckname, const char* dirname);
 bool ListAll(const char* pckname);
+bool ListTree(const char* pckname);
 
-#define HELPSTR "{0} 2017.04.08\n" \
+#define HELPSTR "{0} 2017.06.16\n" \
 "\n" \
 "解压所有文件：\n" \
 "{0} -x input.pck\n" \
@@ -77,6 +79,17 @@ int main(int argc, char* argv[])
 		if (argc == 3)
 		{
 			ret = ListAll(argv[2]);
+		}
+		else
+		{
+			fprintf(stderr, "错误：无效参数");
+		}
+	}
+	else if (strcmp("-t", argv[1]) == 0)
+	{
+		if (argc == 3)
+		{
+			ret = ListTree(argv[2]);
 		}
 		else
 		{
@@ -234,10 +247,59 @@ bool ListAll(const char* pckname)
 		auto pck = PckFile::Open(pckname);
 		printf("文件数：%d\n", pck->GetFileCount());
 		printf("================\n");
-		for (size_t i = 0; i < pck->GetFileCount(); i++)
+		for (auto i = pck->begin(); i != pck->end(); ++i)
 		{
-			printf(pck->GetSingleFileItem(i).GetFileName());
+			printf(i->GetFileName());
 			printf("\n");
+		}
+		ret = true;
+	}
+	catch (const std::exception& e)
+	{
+		fprintf(stderr, "列出文件失败：%s\n", e.what());
+	}
+	return ret;
+}
+
+void _listtree(PckTreeItem item, int level = 0)
+{
+	for (size_t i = 0; i < level; i++)
+	{
+		printf("\t");
+	}
+	printf(item.FileName.c_str());
+	printf("\n");
+	level++;
+	for each (auto i in item.Items)
+	{
+		if (i.second.IsDirectory)
+		{
+			_listtree(i.second, level);
+		}
+		else
+		{
+			for (size_t i = 0; i < level; i++)
+			{
+				printf("\t");
+			}
+			printf(i.second.FileName.c_str());
+			printf("\n");
+		}
+	}
+}
+
+bool ListTree(const char* pckname)
+{
+	bool ret = false;
+	try
+	{
+		auto pck = PckFile::Open(pckname);
+		printf("文件数：%d\n", pck->GetFileCount());
+		printf("================\n");
+		auto tree = PckTree::BuildTree(pck);
+		for each (auto& i in tree)
+		{
+			_listtree(i.second);
 		}
 		ret = true;
 	}

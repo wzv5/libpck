@@ -5,6 +5,7 @@
 #include "../include/pckitem.h"
 #include "../include/pckfile_c.h"
 #include "../src/stringhelper.h"
+#include "../include/pcktree.h"
 #include <Windows.h>
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -67,6 +68,11 @@ namespace UnitTest1
 		{
 			pck->Extract("./temp");
 		}
+
+		TEST_METHOD(构建文件树)
+		{
+			auto tree = PckTree::BuildTree(pck);
+		}
 	};
 
 	TEST_CLASS(新建PCK)
@@ -81,6 +87,7 @@ namespace UnitTest1
 		TEST_METHOD(添加文件)
 		{
 			pck->AddItem("abc123", 6, "abc/123.txt");
+			pck->AddItem(nullptr, 0, "abc/del.txt");
 		}
 	};
 
@@ -114,8 +121,8 @@ namespace UnitTest1
 
 			Logger::WriteMessage(ss.str().c_str());
 			auto data = pck->GetSingleFileItem("abc/123.txt").GetData();
-			auto pstr = (char*)data.data();
-			Assert::AreEqual("abc123", pstr);
+			data.push_back('\0');
+			Assert::AreEqual("abc123", (char*)data.data());
 		}
 
 		TEST_METHOD(删除文件)

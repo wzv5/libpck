@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\include\pckdef.h" />
     <ClInclude Include="..\include\pckfile.h" />
+    <ClInclude Include="..\include\pcktree.h" />
     <ClInclude Include="..\include\pckfile_c.h" />
     <ClInclude Include="..\include\pckitem.h" />
     <ClInclude Include="..\src\myfilesystem.h" />
@@ -31,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\pckfile.cpp" />
+    <ClCompile Include="..\src\pcktree.cpp" />
     <ClCompile Include="..\src\pckfile_c.cpp" />
     <ClCompile Include="..\src\pckitem.cpp" />
   </ItemGroup>
