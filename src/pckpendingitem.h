@@ -89,6 +89,7 @@ public:
 
 	virtual void Release() override
 	{
+		PckPendingItem_Add::Release();
 		std::vector<uint8_t>().swap(m_data);
 		std::vector<uint8_t>().swap(m_compressdata);
 	}
@@ -151,6 +152,7 @@ public:
 
 	virtual void Release() override
 	{
+		PckPendingItem_Add::Release();
 		std::string().swap(m_diskfile);
 		std::vector<uint8_t>().swap(m_data);
 		std::vector<uint8_t>().swap(m_compressdata);
@@ -187,6 +189,7 @@ public:
 
 	virtual void Release() override
 	{
+		PckPendingItem_Add::Release();
 		std::vector<uint8_t>().swap(m_compressdata);
 	}
 
@@ -311,6 +314,7 @@ public:
 
 	virtual void Release() override
 	{
+		PckPendingItem_Update::Release();
 		std::vector<uint8_t>().swap(m_data);
 	}
 
@@ -350,6 +354,7 @@ public:
 
 	virtual void Release() override
 	{
+		PckPendingItem_Update::Release();
 		std::string().swap(m_filename);
 		std::vector<uint8_t>().swap(m_data);
 	}
