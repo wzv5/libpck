@@ -77,8 +77,5 @@
     <ClCompile Include="zip.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="masmx64\inffas8664.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
