@@ -583,15 +583,9 @@ size_t PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
 		}
 		else
 		{
-			memcpy(&pindex, buf.data(), len1);
+			memcpy(pindex, buf.data(), len1);
 		}
 	}
-	/*
-	if (pindex->dwA | pindex->dwB | pindex->dwC | pindex->dwD | pindex->dwE != 0)
-	{
-		printf("!!!");
-	}
-	*/
 	auto s = NormalizePckFileName(pindex->szFilename);
 	memset(pindex->szFilename, 0, 256);
 	strcpy(pindex->szFilename, s.c_str());
