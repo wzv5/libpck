@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <cstdint>
-#include <cstdio>
 #include <memory>
 #include <string>
 #include <stdexcept>
@@ -99,12 +98,12 @@ public:
 		return m_haspkx;
 	}
 
-	size_t Size()
+	uint64_t Size()
 	{
 		return m_pcksize + m_pkxsize;
 	}
 
-	void Seek(long pos)
+	void Seek(uint64_t pos)
 	{
 		if (pos < m_pcksize)
 		{
@@ -165,9 +164,9 @@ public:
 		}
 	}
 
-	void Seek(long off, int way)
+	void Seek(uint64_t off, int way)
 	{
-		long pos = 0;
+		uint64_t pos = 0;
 		switch (way)
 		{
 		case SEEK_CUR:
@@ -185,12 +184,12 @@ public:
 		Seek(pos);
 	}
 
-	void Read(void* buf, size_t len)
+	void Read(void* buf, uint32_t len)
 	{
 		if (m_inpkx)
 		{
 			// 全部数据都在pkx文件中
-			size_t nread = fread(buf, 1, len, m_pkxfile);
+			uint32_t nread = fread(buf, 1, len, m_pkxfile);
 			m_pos += nread;
 			if (nread != len)
 			{
@@ -199,7 +198,7 @@ public:
 		}
 		else
 		{
-			size_t nread = fread(buf, 1, len, m_pckfile);
+			uint32_t nread = fread(buf, 1, len, m_pckfile);
 			m_pos += nread;
 			if (nread == len)
 			{
@@ -221,7 +220,7 @@ public:
 		}
 	}
 
-	void Write(const void* buf, size_t len)
+	void Write(const void* buf, uint32_t len)
 	{
 		if (m_inpkx)
 		{
@@ -268,7 +267,7 @@ public:
 		}
 	}
 
-	void SetSize(size_t len)
+	void SetSize(uint64_t len)
 	{
 		if (m_readonly)
 		{
@@ -343,9 +342,9 @@ private:
 		filename2[filename2.size() - 1] = 'x';
 		return std::move(filename2);
 	}
-	size_t _getfilesize(FILE* f)
+	uint64_t _getfilesize(FILE* f)
 	{
-		size_t ret;
+		uint64_t ret;
 		auto pos = ftell(f);
 		fflush(f);
 		fseek(f, 0, SEEK_END);
@@ -366,8 +365,8 @@ private:
 	bool m_haspkx = false;
 	bool m_inpkx = false;
 	bool m_readonly = true;
-	size_t m_pcksize = 0;
-	size_t m_pkxsize = 0;
-	size_t m_pos = 0;
+	uint64_t m_pcksize = 0;
+	uint64_t m_pkxsize = 0;
+	uint64_t m_pos = 0;
 	std::mutex m_mutex;
 };

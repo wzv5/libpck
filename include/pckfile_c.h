@@ -35,11 +35,11 @@ bool __stdcall Pck_UpdateItem_file(PckFile_c pck, PckItem_c item, const char* di
 bool __stdcall Pck_Extract(PckFile_c pck, const char* dir, ProcessCallback_c callback = NULL);
 bool __stdcall Pck_Extract_if(PckFile_c pck, const char* dir, bool(__stdcall *fn)(PckItem_c), ProcessCallback_c callback = NULL);
 
-uint32_t __stdcall Pck_GetFileSize(PckFile_c pck);
-uint32_t __stdcall Pck_GetTotalDataSize(PckFile_c pck);
-uint32_t __stdcall Pck_GetTotalCompressDataSize(PckFile_c pck);
-uint32_t __stdcall Pck_GetRedundancySize(PckFile_c pck);
-uint32_t __stdcall Pck_GetIndexTableSize(PckFile_c pck);
+uint64_t __stdcall Pck_GetFileSize(PckFile_c pck);
+uint64_t __stdcall Pck_GetTotalDataSize(PckFile_c pck);
+uint64_t __stdcall Pck_GetTotalCompressDataSize(PckFile_c pck);
+uint64_t __stdcall Pck_GetRedundancySize(PckFile_c pck);
+uint64_t __stdcall Pck_GetIndexTableSize(PckFile_c pck);
 
 bool __stdcall Pck_BeginTransaction(PckFile_c pck);
 bool __stdcall Pck_CancelTransaction(PckFile_c pck);

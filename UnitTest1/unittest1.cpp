@@ -48,7 +48,7 @@ namespace UnitTest1
 		TEST_METHOD(统计信息)
 		{
 			stringstream ss;
-			size_t s1, s2, s3, s4, s5;
+			uint64_t s1, s2, s3, s4, s5;
 			s1 = pck->GetTotalCompressDataSize();
 			s2 = pck->GetTotalDataSize();
 			s3 = pck->GetRedundancySize();

@@ -57,12 +57,12 @@ public:
 	//******************************
 	// 修改
 	//******************************
-	void AddItem(const void* buf, size_t len, const std::string& filename);
+	void AddItem(const void* buf, uint32_t len, const std::string& filename);
 	void AddItem(const PckItem& item);
 	void AddItem(const std::string& diskfilename, const std::string& pckfilename);
 	void DeleteItem(const PckItem& item);
 	void RenameItem(const PckItem& item, const std::string& newname);
-	void UpdateItem(const PckItem& item, const void* buf, size_t len);
+	void UpdateItem(const PckItem& item, const void* buf, uint32_t len);
 	void UpdateItem(const PckItem& item, const std::string& diskfilename);
 
 	//******************************
@@ -78,11 +78,11 @@ public:
 	//******************************
 	// 统计信息
 	//******************************
-	size_t GetFileSize() const noexcept;
-	size_t GetTotalDataSize() const noexcept;
-	size_t GetTotalCompressDataSize() const noexcept;
-	size_t GetRedundancySize() const noexcept;
-	size_t GetIndexTableSize() const noexcept;
+	uint64_t GetFileSize() const noexcept;
+	uint64_t GetTotalDataSize() const noexcept;
+	uint64_t GetTotalCompressDataSize() const noexcept;
+	uint64_t GetRedundancySize() const noexcept;
+	uint64_t GetIndexTableSize() const noexcept;
 
 	//******************************
 	// 事务（默认状态下为关闭事务，立即执行）

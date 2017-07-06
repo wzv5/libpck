@@ -22,11 +22,11 @@ public:
 	void ReadHead();
 	void ReadTail();
 	void ReadIndexTable();
-	size_t ReadIndex(_PckItemIndex* pindex);
+	uint32_t ReadIndex(_PckItemIndex* pindex);
 	void WriteHead();
 	void WriteTail();
 	void WriteIndexTable();
-	size_t WriteIndex(const _PckItemIndex& index);
+	uint32_t WriteIndex(const _PckItemIndex& index);
 	void AddPendingItem(std::unique_ptr<PckPendingItem>&& item);
 	static void EnumDir(filesystem::path dir, filesystem::path base, std::function<void(std::string diskpath, std::string pckpath)>);
 
@@ -35,10 +35,10 @@ public:
 	_PckHead m_head = { 0 };
 	_PckTail m_tail = { 0 };
 	std::vector<PckItem> m_items;
-	size_t m_indextableaddr = 0;
-	size_t m_indextablesize = 0;
-	size_t m_totalsize = 0;
-	size_t m_totalcompresssize = 0;
+	uint64_t m_indextableaddr = 0;
+	uint64_t m_indextablesize = 0;
+	uint64_t m_totalsize = 0;
+	uint64_t m_totalcompresssize = 0;
 
 	// 事务相关
 	std::vector<std::unique_ptr<PckPendingItem>> m_pendingitems;
@@ -71,8 +71,7 @@ std::shared_ptr<PckFile> PckFile::Create(const std::string& filename, bool overw
 	auto pck = std::shared_ptr<PckFile>(new PckFile());
 	auto& p = pck->pImpl;
 	p->m_file.Create(filename.c_str(), overwrite);
-	p->m_head.dwHeadCheckHead = PCK_HEAD_VERIFY1;
-	p->m_head.dwHeadCheckTail = PCK_HEAD_VERIFY2;
+	p->m_head.dwHeadCheckHead = PCK_HEAD_VERIFY;
 	p->m_head.dwPckSize = sizeof(_PckHead) + sizeof(_PckTail);
 	p->m_tail.dwIndexTableCheckHead = PCK_TAIL_VERIFY1;
 	p->m_tail.dwIndexTableCheckTail = PCK_TAIL_VERIFY2;
@@ -138,7 +137,7 @@ std::vector<uint8_t> PckFile::GetSingleFileCompressData(const PckItem& item)
 {
 	std::lock_guard<std::mutex> lock(pImpl->m_file.GetMutex());
 	std::vector<uint8_t> buf;
-	size_t len = item.m_index.dwFileCompressDataSize;
+	auto len = item.m_index.dwFileCompressDataSize;
 	buf.resize(len);
 	pImpl->m_file.Seek(item.m_index.dwAddressOffset);
 	pImpl->m_file.Read(buf.data(), len);
@@ -282,27 +281,27 @@ uint32_t PckFile::Extract_if(const std::string& directory,
 	return nfiles;
 }
 
-size_t PckFile::GetFileSize() const noexcept
+uint64_t PckFile::GetFileSize() const noexcept
 {
 	return pImpl->m_head.dwPckSize;
 }
 
-size_t PckFile::GetTotalDataSize() const noexcept
+uint64_t PckFile::GetTotalDataSize() const noexcept
 {
 	return pImpl->m_totalsize;
 }
 
-size_t PckFile::GetTotalCompressDataSize() const noexcept
+uint64_t PckFile::GetTotalCompressDataSize() const noexcept
 {
 	return pImpl->m_totalcompresssize;
 }
 
-size_t PckFile::GetIndexTableSize() const noexcept
+uint64_t PckFile::GetIndexTableSize() const noexcept
 {
 	return pImpl->m_indextablesize;
 }
 
-size_t PckFile::GetRedundancySize() const noexcept
+uint64_t PckFile::GetRedundancySize() const noexcept
 {
 	return pImpl->m_head.dwPckSize - sizeof(_PckHead) - sizeof(_PckTail)
 		- pImpl->m_indextablesize
@@ -430,7 +429,7 @@ void PckFile::CommitTransaction(ProcessCallback callback)
 	pImpl->m_trans = false;
 }
 
-void PckFile::AddItem(const void* buf, size_t len, const std::string& filename)
+void PckFile::AddItem(const void* buf, uint32_t len, const std::string& filename)
 {
 	auto s = NormalizePckFileName(filename);
 	try
@@ -455,6 +454,10 @@ void PckFile::AddItem(const PckItem& item)
 
 void PckFile::AddItem(const std::string& diskfilename, const std::string& pckfilename)
 {
+	if (MyGetFileSize(diskfilename.c_str()) > PCK_MAX_ITEM_SIZE)
+	{
+		throw new runtime_error("目标文件过大");
+	}
 	auto s = NormalizePckFileName(pckfilename);
 	try
 	{
@@ -476,13 +479,17 @@ void PckFile::RenameItem(const PckItem& item, const std::string& newname)
 	pImpl->AddPendingItem(std::make_unique<PckPendingItem_Rename>(item, NormalizePckFileName(newname)));
 }
 
-void PckFile::UpdateItem(const PckItem& item, const void* buf, size_t len)
+void PckFile::UpdateItem(const PckItem& item, const void* buf, uint32_t len)
 {
 	pImpl->AddPendingItem(std::make_unique<PckPendingItem_UpdateBuffer>(item, buf, len));
 }
 
 void PckFile::UpdateItem(const PckItem& item, const std::string& diskfilename)
 {
+	if (MyGetFileSize(diskfilename.c_str()) > PCK_MAX_ITEM_SIZE)
+	{
+		throw new runtime_error("目标文件过大");
+	}
 	pImpl->AddPendingItem(std::make_unique<PckPendingItem_UpdateFile>(item, diskfilename));
 }
 
@@ -524,7 +531,7 @@ void PckFile::PckFileImpl::ReadHead()
 {
 	m_file.Seek(0);
 	m_file.Read(&m_head, sizeof(_PckHead));
-	if (m_head.dwHeadCheckHead != PCK_HEAD_VERIFY1 || m_head.dwHeadCheckTail != PCK_HEAD_VERIFY2)
+	if (m_head.dwHeadCheckHead != PCK_HEAD_VERIFY)
 	{
 		throw std::runtime_error("文件头校验失败");
 	}
@@ -560,7 +567,7 @@ void PckFile::PckFileImpl::ReadIndexTable()
 	}
 }
 
-size_t PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
+uint32_t PckFile::PckFileImpl::ReadIndex(_PckItemIndex* pindex)
 {
 	uint32_t check1, check2, len1, len2;
 	m_file.Read(&check1, 4);
@@ -603,7 +610,6 @@ void PckFile::PckFileImpl::WriteTail()
 {
 	m_tail.dwFileCount = m_items.size();
 	m_tail.dwIndexValue = m_indextableaddr ^ PCK_ADDR_MASK;
-	m_tail.dwUnknown1 = 0xffffffff;  //>!!! 必须
 	m_file.Seek(m_head.dwPckSize - sizeof(_PckTail));
 	m_file.Write(&m_tail, sizeof(_PckTail));
 }
@@ -618,7 +624,7 @@ void PckFile::PckFileImpl::WriteIndexTable()
 	}
 }
 
-size_t PckFile::PckFileImpl::WriteIndex(const _PckItemIndex& index)
+uint32_t PckFile::PckFileImpl::WriteIndex(const _PckItemIndex& index)
 {
 	auto len = compressBound(sizeof(index));
 	std::vector<uint8_t> buf(len);

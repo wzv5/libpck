@@ -40,7 +40,7 @@ public:
 	}
 
 	const std::string& GetFileName() const noexcept	{ return m_filename; }
-	virtual size_t GetDataSize() = 0;
+	virtual uint32_t GetDataSize() = 0;
 	virtual const std::vector<uint8_t>& GetCompressData(int level = Z_DEFAULT_COMPRESSION) = 0;
 
 	virtual void Release() override
@@ -55,13 +55,13 @@ private:
 class PckPendingItem_AddBuffer : public PckPendingItem_Add
 {
 public:
-	PckPendingItem_AddBuffer(const std::string& filename, const void* buf, size_t len)
+	PckPendingItem_AddBuffer(const std::string& filename, const void* buf, uint32_t len)
 		: PckPendingItem_Add(filename)
 		, m_data((uint8_t*)buf, (uint8_t*)buf + len)
 	{
 	}
 
-	virtual size_t GetDataSize() override
+	virtual uint32_t GetDataSize() override
 	{
 		return m_data.size();
 	}
@@ -108,7 +108,7 @@ public:
 	{
 	}
 
-	virtual size_t GetDataSize() override
+	virtual uint32_t GetDataSize() override
 	{
 		if (m_data.empty())
 		{
@@ -173,7 +173,7 @@ public:
 	{
 	}
 
-	virtual size_t GetDataSize() override
+	virtual uint32_t GetDataSize() override
 	{
 		return m_item.GetDataSize();
 	}
@@ -265,7 +265,7 @@ public:
 	}
 
 	virtual const std::vector<uint8_t>& GetData() = 0;
-	size_t GetDataSize() { return GetData().size(); }
+	uint32_t GetDataSize() { return GetData().size(); }
 	const std::vector<uint8_t>& GetCompressData(int level = Z_DEFAULT_COMPRESSION)
 	{
 		if (GetDataSize() < PCK_BEGINCOMPRESS_SIZE)
@@ -301,7 +301,7 @@ private:
 class PckPendingItem_UpdateBuffer : public PckPendingItem_Update
 {
 public:
-	PckPendingItem_UpdateBuffer(const PckItem& item, const void* buf, size_t len)
+	PckPendingItem_UpdateBuffer(const PckItem& item, const void* buf, uint32_t len)
 		: PckPendingItem_Update(item)
 		, m_data((uint8_t*)buf, (uint8_t*)buf + len)
 	{

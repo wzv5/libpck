@@ -329,7 +329,7 @@ bool __stdcall Pck_Extract_if(PckFile_c pck, const char* dir, bool(__stdcall *fn
 	}
 }
 
-uint32_t __stdcall Pck_GetFileSize(PckFile_c pck)
+uint64_t __stdcall Pck_GetFileSize(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -343,7 +343,7 @@ uint32_t __stdcall Pck_GetFileSize(PckFile_c pck)
 	}
 }
 
-uint32_t __stdcall Pck_GetTotalDataSize(PckFile_c pck)
+uint64_t __stdcall Pck_GetTotalDataSize(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -357,7 +357,7 @@ uint32_t __stdcall Pck_GetTotalDataSize(PckFile_c pck)
 	}
 }
 
-uint32_t __stdcall Pck_GetTotalCompressDataSize(PckFile_c pck)
+uint64_t __stdcall Pck_GetTotalCompressDataSize(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -371,7 +371,7 @@ uint32_t __stdcall Pck_GetTotalCompressDataSize(PckFile_c pck)
 	}
 }
 
-uint32_t __stdcall Pck_GetRedundancySize(PckFile_c pck)
+uint64_t __stdcall Pck_GetRedundancySize(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -385,7 +385,7 @@ uint32_t __stdcall Pck_GetRedundancySize(PckFile_c pck)
 	}
 }
 
-uint32_t __stdcall Pck_GetIndexTableSize(PckFile_c pck)
+uint64_t __stdcall Pck_GetIndexTableSize(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
