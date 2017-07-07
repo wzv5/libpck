@@ -1,6 +1,8 @@
 ﻿libpck
 ======
 
+[![Build status](https://ci.appveyor.com/api/projects/status/p4afro8y8h11mmqj?svg=true)](https://ci.appveyor.com/project/wzv5/libpck)
+
 这是一个跨平台的、纯C++实现的、基于最新C++11、14标准（包括部分C++17标准）的诛仙pck文件包处理库。
 
 特点： 
