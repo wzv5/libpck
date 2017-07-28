@@ -17,17 +17,23 @@ namespace filesystem = std::experimental::filesystem;
 void PrintHelp(const char* s);
 void PrintProgress(int i, int t);
 bool ExtractAll(const char* pckname);
+bool ExtractSingle(const char* pckname, const char* filename);
 bool ExtractList(const char* pckname, const char* excludelist, const char* keeplist);
 bool CompressDir(const char* pckname, const char* dirname);
 bool ListAll(const char* pckname);
 bool ListTree(const char* pckname);
+bool AddFile(const char* pckname, const char* diskfilename, const char* pckfilename);
+bool DeleteFile(const char* pckname, const char* pckfilename);
 
-#define HELPSTR "{0} 2017.06.16\n" \
+#define HELPSTR "{0} 2017.07.29\n" \
 "\n" \
 "解压所有文件：\n" \
 "{0} -x input.pck\n" \
 "\n" \
-"解压指定文件：\n" \
+"解压单个文件：\n" \
+"{0} -x input.pck filename\n" \
+"\n" \
+"根据列表解压文件：\n" \
 "{0} -x input.pck 排除列表.txt 保留列表.txt\n" \
 "如果以“\\”结尾，则为目录，否则为文件。\n" \
 "如果行首为“#”，则该行为注释，不作为列表内容。\n" \
@@ -37,6 +43,15 @@ bool ListTree(const char* pckname);
 "\n" \
 "列出所有文件：\n" \
 "{0} -l input.pck\n" \
+"\n" \
+"树状列出所有文件：\n" \
+"{0} -t input.pck\n" \
+"\n" \
+"添加或更新文件：\n" \
+"{0} -a input.pck diskfilename pckfilename\n" \
+"\n" \
+"删除文件：\n" \
+"{0} -d input.pck pckfilename\n" \
 "\n" \
 "感谢 stsm/liqf/李秋枫 开源的WinPCK！\n"
 
@@ -54,13 +69,17 @@ int main(int argc, char* argv[])
 		{
 			ret = ExtractAll(argv[2]);
 		}
+		else if (argc == 4)
+		{
+			ret = ExtractSingle(argv[2], argv[3]);
+		}
 		else if (argc == 5)
 		{
 			ret = ExtractList(argv[2], argv[3], argv[4]);
 		}
 		else
 		{
-			fprintf(stderr, "错误：无效参数");
+			fprintf(stderr, "错误：无效参数\n");
 		}
 	}
 	else if (strcmp("-c", argv[1]) == 0)
@@ -71,7 +90,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			fprintf(stderr, "错误：无效参数");
+			fprintf(stderr, "错误：无效参数\n");
 		}
 	}
 	else if (strcmp("-l", argv[1]) == 0)
@@ -82,7 +101,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			fprintf(stderr, "错误：无效参数");
+			fprintf(stderr, "错误：无效参数\n");
 		}
 	}
 	else if (strcmp("-t", argv[1]) == 0)
@@ -93,7 +112,29 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			fprintf(stderr, "错误：无效参数");
+			fprintf(stderr, "错误：无效参数\n");
+		}
+	}
+	else if (strcmp("-a", argv[1]) == 0)
+	{
+		if (argc == 5)
+		{
+			ret = AddFile(argv[2], argv[3], argv[4]);
+		}
+		else
+		{
+			fprintf(stderr, "错误：无效参数\n");
+		}
+	}
+	else if (strcmp("-d", argv[1]) == 0)
+	{
+		if (argc == 4)
+		{
+			ret = DeleteFile(argv[2], argv[3]);
+		}
+		else
+		{
+			fprintf(stderr, "错误：无效参数\n");
 		}
 	}
 	else if (strcmp("-h", argv[1]) == 0 || strcmp("-?", argv[1]) == 0)
@@ -102,7 +143,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		fprintf(stderr, "错误：无效参数");
+		fprintf(stderr, "错误：无效参数\n");
 	}
 
 	return ret;
@@ -143,7 +184,28 @@ bool ExtractAll(const char* pckname)
 	}
 	catch (const std::exception& e)
 	{
-		fprintf(stderr, "解压失败：%s\n", e.what());
+		fprintf(stderr, "操作失败：%s\n", e.what());
+	}
+	return ret;
+}
+
+bool ExtractSingle(const char* pckname, const char* filename)
+{
+	bool ret = false;
+	try
+	{
+		auto pck = PckFile::Open(pckname);
+		// 先尝试获取文件对象，判断文件是否存在
+		pck->GetSingleFileItem(filename);
+		pck->Extract_if("./", [&](const PckItem& item) {
+			return strcmp(item.GetFileName(), filename) == 0;
+		});
+		printf("完成！\n");
+		ret = true;
+	}
+	catch (const std::exception& e)
+	{
+		fprintf(stderr, "操作失败：%s\n", e.what());
 	}
 	return ret;
 }
@@ -215,7 +277,7 @@ bool ExtractList(const char* pckname, const char* excludelist, const char* keepl
 	}
 	catch (const std::exception& e)
 	{
-		fprintf(stderr, "解压失败：%s\n", e.what());
+		fprintf(stderr, "操作失败：%s\n", e.what());
 	}
 	return ret;
 }
@@ -234,7 +296,7 @@ bool CompressDir(const char* pckname, const char* dirname)
 	}
 	catch (const std::exception& e)
 	{
-		fprintf(stderr, "压缩失败：%s\n", e.what());
+		fprintf(stderr, "操作失败：%s\n", e.what());
 	}
 	return ret;
 }
@@ -256,7 +318,7 @@ bool ListAll(const char* pckname)
 	}
 	catch (const std::exception& e)
 	{
-		fprintf(stderr, "列出文件失败：%s\n", e.what());
+		fprintf(stderr, "操作失败：%s\n", e.what());
 	}
 	return ret;
 }
@@ -305,7 +367,50 @@ bool ListTree(const char* pckname)
 	}
 	catch (const std::exception& e)
 	{
-		fprintf(stderr, "列出文件失败：%s\n", e.what());
+		fprintf(stderr, "操作失败：%s\n", e.what());
+	}
+	return ret;
+}
+
+bool AddFile(const char* pckname, const char* diskfilename, const char* pckfilename)
+{
+	bool ret = false;
+	try
+	{
+		auto pck = PckFile::Open(pckname, false);
+		pck->AddItem(diskfilename, pckfilename);
+		printf("完成！\n");
+		ret = true;
+	}
+	catch (const std::exception& e)
+	{
+		fprintf(stderr, "操作失败：%s\n", e.what());
+	}
+	return ret;
+}
+
+bool DeleteFile(const char* pckname, const char* pckfilename)
+{
+	bool ret = false;
+	try
+	{
+		auto pck = PckFile::Open(pckname, false);
+		try
+		{
+			auto& item = pck->GetSingleFileItem(pckfilename);
+		}
+		catch (const std::exception&)
+		{
+			printf("找不到指定文件\n");
+			return true;
+		}
+		pck->DeleteItem(pck->GetSingleFileItem(pckfilename));
+		printf("完成！\n");
+		ret = true;
+	}
+	catch (const std::exception& e)
+	{
+		fprintf(stderr, "操作失败：%s\n", e.what());
 	}
 	return ret;
 }
