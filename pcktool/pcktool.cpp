@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "错误：无效参数\n");
 	}
 
-	return ret;
+	return !ret;
 }
 
 void PrintHelp(const char* s)
