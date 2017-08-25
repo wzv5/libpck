@@ -1,29 +1,31 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpck", "libpck\libpck.vcxproj", "{E53AD1C1-C293-41B3-8344-DF942F20B114}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpck.dll", "libpck.dll\libpck.dll.vcxproj", "{A466C5B2-9E42-41FB-9C97-606FDB3BDEA4}"
 	ProjectSection(ProjectDependencies) = postProject
-		{02348475-F09F-47F4-BB5E-A3A1B0957411} = {02348475-F09F-47F4-BB5E-A3A1B0957411}
 		{E53AD1C1-C293-41B3-8344-DF942F20B114} = {E53AD1C1-C293-41B3-8344-DF942F20B114}
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65} = {5A51ACF6-7B10-456B-932C-8804F86E3F65}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcktool", "pcktool\pcktool.vcxproj", "{9CA3A246-5003-4271-A5CF-ADBC78EF3879}"
 	ProjectSection(ProjectDependencies) = postProject
-		{02348475-F09F-47F4-BB5E-A3A1B0957411} = {02348475-F09F-47F4-BB5E-A3A1B0957411}
 		{E53AD1C1-C293-41B3-8344-DF942F20B114} = {E53AD1C1-C293-41B3-8344-DF942F20B114}
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65} = {5A51ACF6-7B10-456B-932C-8804F86E3F65}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest1", "UnitTest1\UnitTest1.vcxproj", "{7A274C67-A50E-4319-8324-C69E7C926F1C}"
 	ProjectSection(ProjectDependencies) = postProject
-		{02348475-F09F-47F4-BB5E-A3A1B0957411} = {02348475-F09F-47F4-BB5E-A3A1B0957411}
 		{E53AD1C1-C293-41B3-8344-DF942F20B114} = {E53AD1C1-C293-41B3-8344-DF942F20B114}
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65} = {5A51ACF6-7B10-456B-932C-8804F86E3F65}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlib.vcxproj", "{02348475-F09F-47F4-BB5E-A3A1B0957411}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib-ng", "zlib-ng\zlib-ng.vcxproj", "{5A51ACF6-7B10-456B-932C-8804F86E3F65}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,8 +75,19 @@ Global
 		{02348475-F09F-47F4-BB5E-A3A1B0957411}.Release|x64.Build.0 = Release|x64
 		{02348475-F09F-47F4-BB5E-A3A1B0957411}.Release|x86.ActiveCfg = Release|Win32
 		{02348475-F09F-47F4-BB5E-A3A1B0957411}.Release|x86.Build.0 = Release|Win32
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65}.Debug|x64.ActiveCfg = Debug|x64
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65}.Debug|x64.Build.0 = Debug|x64
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65}.Debug|x86.ActiveCfg = Debug|Win32
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65}.Debug|x86.Build.0 = Debug|Win32
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65}.Release|x64.ActiveCfg = Release|x64
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65}.Release|x64.Build.0 = Release|x64
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65}.Release|x86.ActiveCfg = Release|Win32
+		{5A51ACF6-7B10-456B-932C-8804F86E3F65}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DC00D3D4-6D64-44AC-86FE-04E556FA9779}
 	EndGlobalSection
 EndGlobal
