@@ -28,7 +28,7 @@
     <ProjectGuid>{A466C5B2-9E42-41FB-9C97-606FDB3BDEA4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libpckdll</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
