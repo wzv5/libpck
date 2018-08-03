@@ -543,6 +543,22 @@ void PckFile::ReBuild(const std::string& filename, const std::string& newname, b
 {
 	auto pck = PckFile::Open(filename);
 	auto pcknew = PckFile::Create(newname, overwrite);
+
+	// 去重
+	{
+		auto cmpFunc = [](const PckItem& left, const PckItem& right) {
+			return StringHelper::CompareIgnoreCase(std::string(left.GetFileName()), std::string(right.GetFileName()));
+		};
+		auto& items = pck->pImpl->m_items;
+		std::sort(items.begin(), items.end(), [](const PckItem& left, const PckItem& right) {
+			return StringHelper::CompareIgnoreCase(std::string(left.GetFileName()), std::string(right.GetFileName())) < 0;
+		});
+		auto it = std::unique(items.begin(), items.end(), [](const PckItem& left, const PckItem& right) {
+			return StringHelper::CompareIgnoreCase(std::string(left.GetFileName()), std::string(right.GetFileName())) == 0;
+		});
+		items.erase(it, items.end());
+	}
+
 	pcknew->BeginTransaction();
 	for (auto& i : pck->pImpl->m_items)
 	{
