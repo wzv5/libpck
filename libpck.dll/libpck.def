@@ -17,6 +17,7 @@ Pck_Item_GetFileDataSize
 Pck_Item_GetFileData
 Pck_Item_GetFileCompressDataSize
 Pck_Item_GetFileCompressData
+Pck_FileExists
 
 Pck_AddItem_buf
 Pck_AddItem_item
