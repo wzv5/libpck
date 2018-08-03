@@ -24,8 +24,9 @@ bool ListAll(const char* pckname);
 bool ListTree(const char* pckname);
 bool AddFile(const char* pckname, const char* diskfilename, const char* pckfilename);
 bool DeleteFile(const char* pckname, const char* pckfilename);
+bool ReBuild(const char* pckname, const char* outname);
 
-#define HELPSTR "{0} 2017.07.29\n" \
+#define HELPSTR "{0} 2018.08.03\n" \
 "\n" \
 "解压所有文件：\n" \
 "{0} -x input.pck\n" \
@@ -52,6 +53,9 @@ bool DeleteFile(const char* pckname, const char* pckfilename);
 "\n" \
 "删除文件：\n" \
 "{0} -d input.pck pckfilename\n" \
+"\n" \
+"重建：\n" \
+"{0} -r input.pck output.pck\n" \
 "\n" \
 "感谢 stsm/liqf/李秋枫 开源的WinPCK！\n"
 
@@ -137,6 +141,17 @@ int main(int argc, char* argv[])
 			fprintf(stderr, "错误：无效参数\n");
 		}
 	}
+	else if (strcmp("-r", argv[1]) == 0)
+	{
+		if (argc == 4)
+		{
+			ret = ReBuild(argv[2], argv[3]);
+		}
+		else
+		{
+			fprintf(stderr, "错误：无效参数\n");
+		}
+	}
 	else if (strcmp("-h", argv[1]) == 0 || strcmp("-?", argv[1]) == 0)
 	{
 		PrintHelp(argv[0]);
@@ -145,7 +160,6 @@ int main(int argc, char* argv[])
 	{
 		fprintf(stderr, "错误：无效参数\n");
 	}
-
 	return !ret;
 }
 
@@ -159,14 +173,8 @@ void PrintHelp(const char* s)
 
 void PrintProgress(int i, int t)
 {
-	static int lastlen = 0;
-	for (size_t i = 0; i < lastlen; i++)
-	{
-		printf("\b");
-	}
-	auto s = StringHelper::FormatString("%d / %d", i, t);
+	auto s = StringHelper::FormatString("\r%d / %d", i, t);
 	printf(s.c_str());
-	lastlen = s.size();
 }
 
 bool ExtractAll(const char* pckname)
@@ -406,6 +414,25 @@ bool DeleteFile(const char* pckname, const char* pckfilename)
 		}
 		pck->DeleteItem(pck->GetSingleFileItem(pckfilename));
 		printf("完成！\n");
+		ret = true;
+	}
+	catch (const std::exception& e)
+	{
+		fprintf(stderr, "操作失败：%s\n", e.what());
+	}
+	return ret;
+}
+
+bool ReBuild(const char* pckname, const char* outname)
+{
+	bool ret = false;
+	try
+	{
+		PckFile::ReBuild(pckname, outname, true, [](auto i, auto t) {
+			PrintProgress(i, t);
+			return true;
+		});
+		printf("\n完成！\n");
 		ret = true;
 	}
 	catch (const std::exception& e)
