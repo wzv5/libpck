@@ -489,6 +489,10 @@ void PckFile::DeleteItem(const PckItem& item)
 
 void PckFile::RenameItem(const PckItem& item, const std::string& newname)
 {
+	if (FileExists(newname))
+	{
+		throw new runtime_error("存在同名文件");
+	}
 	pImpl->AddPendingItem(std::make_unique<PckPendingItem_Rename>(item, NormalizePckFileName(newname)));
 }
 
