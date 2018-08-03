@@ -144,6 +144,19 @@ std::vector<uint8_t> PckFile::GetSingleFileCompressData(const PckItem& item)
 	return std::move(buf);
 }
 
+bool PckFile::FileExists(const std::string& filename) const
+{
+	try
+	{
+		GetSingleFileItem(filename);
+		return true;
+	}
+	catch (...)
+	{
+		return false;
+	}
+}
+
 PckFile::PckItemIterator PckFile::begin() const noexcept
 {
 	return pImpl->m_items.cbegin();

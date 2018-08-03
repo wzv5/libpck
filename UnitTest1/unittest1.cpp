@@ -73,6 +73,12 @@ namespace UnitTest1
 		{
 			auto tree = PckTree::BuildTree(pck);
 		}
+
+		TEST_METHOD(文件是否存在)
+		{
+			Assert::IsTrue(pck->FileExists("abc\\123.txt"));
+			Assert::IsFalse(pck->FileExists("xxxxx"));
+		}
 	};
 
 	TEST_CLASS(新建PCK)

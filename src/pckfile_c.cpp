@@ -186,6 +186,12 @@ bool __stdcall Pck_Item_GetFileCompressData(PckItem_c item, void* buf)
 	}
 }
 
+bool __stdcall Pck_FileExists(PckFile_c pck, const char* filename)
+{
+	PCK_GETPTR();
+	return p->FileExists(filename);
+}
+
 bool __stdcall Pck_AddItem_buf(PckFile_c pck, const void* buf, uint32_t len, const char* filename)
 {
 	PCK_RESETLASTERROR();

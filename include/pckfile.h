@@ -45,6 +45,10 @@ public:
 	std::vector<uint8_t> GetSingleFileData(const PckItem& item);
 	std::vector<uint8_t> GetSingleFileCompressData(const PckItem& item);
 
+	//文件是否存在
+	bool FileExists(const std::string& filename) const;
+
+
 	//******************************
 	// 遍历
 	//******************************

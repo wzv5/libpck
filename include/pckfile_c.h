@@ -23,6 +23,7 @@ uint32_t __stdcall Pck_Item_GetFileDataSize(PckItem_c item);
 bool __stdcall Pck_Item_GetFileData(PckItem_c item, void* buf);
 uint32_t __stdcall Pck_Item_GetFileCompressDataSize(PckItem_c item);
 bool __stdcall Pck_Item_GetFileCompressData(PckItem_c item, void* buf);
+bool __stdcall Pck_FileExists(PckFile_c pck, const char* filename);
 
 bool __stdcall Pck_AddItem_buf(PckFile_c pck, const void* buf, uint32_t len, const char* filename);
 bool __stdcall Pck_AddItem_item(PckFile_c pck, PckItem_c item);
