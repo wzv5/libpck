@@ -144,7 +144,7 @@ std::vector<uint8_t> PckFile::GetSingleFileCompressData(const PckItem& item)
 	return std::move(buf);
 }
 
-bool PckFile::FileExists(const std::string& filename) const
+bool PckFile::FileExists(const std::string& filename) const noexcept
 {
 	try
 	{
@@ -376,12 +376,13 @@ void PckFile::CommitTransaction(ProcessCallback callback)
 		else if (t == PckPendingActionType::Delete)
 		{
 			auto p1 = (PckPendingItem_Delete*)p.get();
-			auto& item = p1->GetItem();
-			auto iter = std::remove(pImpl->m_items.begin(), pImpl->m_items.end(), item);
-			pImpl->m_items.erase(iter);
+			auto& item = GetSingleFileItem(p1->GetFileName());
 
 			pImpl->m_totalcompresssize -= item.GetCompressDataSize();
 			pImpl->m_totalsize -= item.GetDataSize();
+
+			auto iter = std::remove(pImpl->m_items.begin(), pImpl->m_items.end(), item);
+			pImpl->m_items.erase(iter);
 		}
 		else if (t == PckPendingActionType::Rename)
 		{
@@ -508,6 +509,22 @@ void PckFile::UpdateItem(const PckItem& item, const std::string& diskfilename)
 		throw new runtime_error("目标文件过大");
 	}
 	pImpl->AddPendingItem(std::make_unique<PckPendingItem_UpdateFile>(item, diskfilename));
+}
+
+int PckFile::DeleteDirectory(const std::string& dirname)
+{
+	auto dir = NormalizePckFileName(dirname);
+	dir.append("\\");
+	int n = 0;
+	for (auto i = this->begin(); i != this->end(); ++i)
+	{
+		if (StringHelper::CompareIgnoreCase(std::string(i->GetFileName()).substr(0, dir.size()), dir) == 0)
+		{
+			pImpl->AddPendingItem(std::make_unique<PckPendingItem_Delete>(*i));
+			++n;
+		}
+	}
+	return n;
 }
 
 void PckFile::CreateFromDirectory(const std::string& filename, const std::string& dir, bool usedirname, bool overwrite, ProcessCallback callback)

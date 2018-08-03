@@ -32,6 +32,7 @@ bool __stdcall Pck_DeleteItem(PckFile_c pck, PckItem_c item);
 bool __stdcall Pck_RenameItem(PckFile_c pck, PckItem_c item, const char* newname);
 bool __stdcall Pck_UpdateItem_buf(PckFile_c pck, PckItem_c item, const void* buf, uint32_t len);
 bool __stdcall Pck_UpdateItem_file(PckFile_c pck, PckItem_c item, const char* diskfilename);
+bool __stdcall Pck_DeleteDirectory(PckFile_c pck, const char* dirname);
 
 bool __stdcall Pck_Extract(PckFile_c pck, const char* dir, ProcessCallback_c callback = NULL);
 bool __stdcall Pck_Extract_if(PckFile_c pck, const char* dir, bool(__stdcall *fn)(PckItem_c), ProcessCallback_c callback = NULL);

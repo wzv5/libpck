@@ -46,7 +46,7 @@ public:
 	std::vector<uint8_t> GetSingleFileCompressData(const PckItem& item);
 
 	//文件是否存在
-	bool FileExists(const std::string& filename) const;
+	bool FileExists(const std::string& filename) const noexcept;
 
 
 	//******************************
@@ -68,6 +68,9 @@ public:
 	void RenameItem(const PckItem& item, const std::string& newname);
 	void UpdateItem(const PckItem& item, const void* buf, uint32_t len);
 	void UpdateItem(const PckItem& item, const std::string& diskfilename);
+
+	// 删除目录，返回目录下的文件数，返回值不代表实际删除结果
+	int DeleteDirectory(const std::string& dirname);
 
 	//******************************
 	// 解压

@@ -254,6 +254,21 @@ bool __stdcall Pck_DeleteItem(PckFile_c pck, PckItem_c item)
 	}
 }
 
+bool __stdcall Pck_DeleteDirectory(PckFile_c pck, const char* dirname)
+{
+	PCK_RESETLASTERROR();
+	try
+	{
+		PCK_GETPTR();
+		p->DeleteDirectory(dirname);
+		return true;
+	}
+	catch (const std::exception& e)
+	{
+		PCK_SETLASTERROR();
+	}
+}
+
 bool __stdcall Pck_RenameItem(PckFile_c pck, PckItem_c item, const char* newname)
 {
 	PCK_RESETLASTERROR();

@@ -203,21 +203,21 @@ class PckPendingItem_Delete : public PckPendingItem
 public:
 	PckPendingItem_Delete(const PckItem& item)
 		: PckPendingItem(PckPendingActionType::Delete)
-		, m_item(item)
 	{
+		m_filename = item.GetFileName();
 	}
 
-	const PckItem& GetItem() const noexcept
+	const std::string& GetFileName() const noexcept
 	{
-		return m_item;
+		return m_filename;
 	}
 
 	virtual void Release() override
 	{
-
+		std::string().swap(m_filename);
 	}
 private:
-	const PckItem& m_item;
+	std::string m_filename;
 };
 
 class PckPendingItem_Rename : public PckPendingItem

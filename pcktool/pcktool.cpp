@@ -51,8 +51,9 @@ bool ReBuild(const char* pckname, const char* outname);
 "添加或更新文件：\n" \
 "{0} -a input.pck diskfilename pckfilename\n" \
 "\n" \
-"删除文件：\n" \
+"删除文件或目录：\n" \
 "{0} -d input.pck pckfilename\n" \
+"如果以“\\”结尾，则为目录，否则为文件。\n" \
 "\n" \
 "重建：\n" \
 "{0} -r input.pck output.pck\n" \
@@ -400,21 +401,39 @@ bool AddFile(const char* pckname, const char* diskfilename, const char* pckfilen
 bool DeleteFile(const char* pckname, const char* pckfilename)
 {
 	bool ret = false;
+	std::string filename = pckfilename;
+	StringHelper::Trim(filename);
+	StringHelper::ReplaceAll<std::string>(filename, "/", "\\");
+	bool isdir = filename.substr(filename.size() - 1) == "\\";
 	try
 	{
 		auto pck = PckFile::Open(pckname, false);
-		try
+		if (isdir)
 		{
-			auto& item = pck->GetSingleFileItem(pckfilename);
+			auto a1 = pck->GetFileCount();
+			pck->BeginTransaction();
+			auto n = pck->DeleteDirectory(pckfilename);
+			pck->CommitTransaction();
+			auto a2 = pck->GetFileCount();
+			auto a3 = a1 - a2;
+			printf("已删除 %d 个文件\n", n);
+			ret = true;
 		}
-		catch (const std::exception&)
+		else
 		{
-			printf("找不到指定文件\n");
-			return true;
+			try
+			{
+				auto& item = pck->GetSingleFileItem(pckfilename);
+			}
+			catch (const std::exception&)
+			{
+				printf("找不到指定文件\n");
+				return true;
+			}
+			pck->DeleteItem(pck->GetSingleFileItem(pckfilename));
+			printf("完成！\n");
+			ret = true;
 		}
-		pck->DeleteItem(pck->GetSingleFileItem(pckfilename));
-		printf("完成！\n");
-		ret = true;
 	}
 	catch (const std::exception& e)
 	{

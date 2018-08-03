@@ -26,6 +26,7 @@ Pck_DeleteItem
 Pck_RenameItem
 Pck_UpdateItem_buf
 Pck_UpdateItem_file
+Pck_DeleteDirectory
 
 Pck_Extract
 Pck_Extract_if
