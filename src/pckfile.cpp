@@ -29,6 +29,7 @@ public:
 	uint32_t WriteIndex(const _PckItemIndex& index);
 	void AddPendingItem(std::unique_ptr<PckPendingItem>&& item);
 	static void EnumDir(filesystem::path dir, filesystem::path base, std::function<void(std::string diskpath, std::string pckpath)>);
+	void CalcIndexTableAddr();
 
 	PckFile* m_pck;
 	PckFileIO m_file;
@@ -432,6 +433,7 @@ void PckFile::CommitTransaction(ProcessCallback callback)
 	}
 
 	// 写出顺序是重要的！
+	pImpl->CalcIndexTableAddr();
 	pImpl->WriteIndexTable();
 	pImpl->WriteHead();
 	pImpl->WriteTail();
@@ -723,5 +725,22 @@ void PckFile::PckFileImpl::EnumDir(filesystem::path dir, filesystem::path base, 
 			EnumDir(*i, base / i->path().filename(), callback);
 		}
 	}
+}
+
+// 计算索引表（即数据区末尾）的偏移
+// 在删除数据末尾的文件时，可以回收这些空间
+void PckFile::PckFileImpl::CalcIndexTableAddr()
+{
+	uint64_t addr = sizeof(_PckHead);
+	uint64_t size = 0;
+	for (auto& item : m_items)
+	{
+		if (item.m_index.dwAddressOffset > addr)
+		{
+			addr = item.m_index.dwAddressOffset;
+			size = item.m_index.dwFileCompressDataSize;
+		}
+	}
+	m_indextableaddr = addr + size;
 }
 #pragma endregion
