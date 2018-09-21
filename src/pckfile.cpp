@@ -257,7 +257,7 @@ uint32_t PckFile::Extract_if(const std::string& directory,
 
 		}, this, std::ref(threads[i].p));
 	}
-	while (index < total)
+	while (index <= total)
 	{
 		if (callback && !callback(index, total))
 		{
