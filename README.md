@@ -70,6 +70,12 @@ PckFile::CreateFromDirectory("xxx.pck", "X:\\...");
 PckFile::ReBuild("old.pck", "new.pck");
 ```
 
+已知问题
+========
+
+<https://github.com/wzv5/libpck/issues>
+
+
 以后的打算
 =========
 
