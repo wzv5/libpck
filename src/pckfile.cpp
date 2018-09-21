@@ -548,9 +548,6 @@ void PckFile::ReBuild(const std::string& filename, const std::string& newname, b
 
 	// 去重
 	{
-		auto cmpFunc = [](const PckItem& left, const PckItem& right) {
-			return StringHelper::CompareIgnoreCase(std::string(left.GetFileName()), std::string(right.GetFileName()));
-		};
 		auto& items = pck->pImpl->m_items;
 		std::sort(items.begin(), items.end(), [](const PckItem& left, const PckItem& right) {
 			return StringHelper::CompareIgnoreCase(std::string(left.GetFileName()), std::string(right.GetFileName())) < 0;
