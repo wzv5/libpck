@@ -731,16 +731,13 @@ void PckFile::PckFileImpl::EnumDir(filesystem::path dir, filesystem::path base, 
 // 在删除数据末尾的文件时，可以回收这些空间
 void PckFile::PckFileImpl::CalcIndexTableAddr()
 {
-	uint64_t addr = sizeof(_PckHead);
-	uint64_t size = 0;
 	for (auto& item : m_items)
 	{
-		if (item.m_index.dwAddressOffset > addr)
+		auto addr = item.m_index.dwAddressOffset + item.m_index.dwFileCompressDataSize;
+		if (addr > m_indextableaddr)
 		{
-			addr = item.m_index.dwAddressOffset;
-			size = item.m_index.dwFileCompressDataSize;
+			m_indextableaddr = addr;
 		}
 	}
-	m_indextableaddr = addr + size;
 }
 #pragma endregion
