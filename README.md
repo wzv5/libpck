@@ -31,9 +31,13 @@
 使用 VS2017 编译
 ----------------
 
+使用 [vcpkg](https://github.com/Microsoft/vcpkg) 管理第三方依赖，请自行安装 vcpkg，并安装它的 [VS integrate](https://github.com/Microsoft/vcpkg/blob/master/docs/users/integration.md)。
+
 ```
-git clone https://github.com/wzv5/libpck
+vcpkg install zlib:x86-windows-static
+vcpkg install zlib:x64-windows-static
 ```
+
 打开 ```libpck.sln```，其中包含以下项目： 
 - libpck：编译静态库
 - libpck.dll：编译C接口的动态库
