@@ -13,8 +13,6 @@
 #define TRIMCHAR " \r\n\t"
 #define TRIMWCHAR L" \r\n\t"
 
-using namespace std;
-
 namespace StringHelper
 {
 	template <typename T>
@@ -32,25 +30,25 @@ namespace StringHelper
 		return s;
 	}
 
-	inline string& TrimLeft(string& s)
+	inline std::string& TrimLeft(std::string& s)
 	{
 		if (s.empty()) return s;
 		return s.erase(0, s.find_first_not_of(TRIMCHAR));
 	}
 
-	inline string& TrimRight(string& s)
+	inline std::string& TrimRight(std::string& s)
 	{
 		if (s.empty()) return s;
 		return s.erase(s.find_last_not_of(TRIMCHAR) + 1);
 	}
 
-	inline wstring& TrimLeft(wstring& s)
+	inline std::wstring& TrimLeft(std::wstring& s)
 	{
 		if (s.empty()) return s;
 		return s.erase(0, s.find_first_not_of(TRIMWCHAR));
 	}
 
-	inline wstring& TrimRight(wstring& s)
+	inline std::wstring& TrimRight(std::wstring& s)
 	{
 		if (s.empty()) return s;
 		return s.erase(s.find_last_not_of(TRIMWCHAR) + 1);
@@ -86,29 +84,29 @@ namespace StringHelper
 		return ss1.compare(ss2);
 	}
 
-	inline string FormatString(const char* s, ...)
+	inline std::string FormatString(const char* s, ...)
 	{
 		char strBuffer[4096] = { 0 };
 		va_list vlArgs;
 		va_start(vlArgs, s);
 		vsnprintf(strBuffer, 4095, s, vlArgs);
 		va_end(vlArgs);
-		return string(strBuffer);
+		return std::string(strBuffer);
 	}
 
-	inline wstring FormatString(const wchar_t* s, ...)
+	inline std::wstring FormatString(const wchar_t* s, ...)
 	{
 		wchar_t strBuffer[4096] = { 0 };
 		va_list vlArgs;
 		va_start(vlArgs, s);
 		vswprintf(strBuffer, 4095, s, vlArgs);
 		va_end(vlArgs);
-		return wstring(strBuffer);
+		return std::wstring(strBuffer);
 	}
 
-	inline wstring A2W(const std::string& s, const locale& loc = locale(""))
+	inline std::wstring A2W(const std::string& s, const std::locale& loc = std::locale(""))
 	{
-		typedef codecvt<wchar_t, char, mbstate_t> facet_type;
+		typedef std::codecvt<wchar_t, char, mbstate_t> facet_type;
 		mbstate_t mbst = mbstate_t();
 
 		const char* frombegin = s.data();
@@ -127,9 +125,9 @@ namespace StringHelper
 		return tobuf.data();
 	}
 
-	inline string W2A(const std::wstring& s, const locale& loc = locale(""))
+	inline std::string W2A(const std::wstring& s, const std::locale& loc = std::locale(""))
 	{
-		typedef codecvt<wchar_t, char, mbstate_t> facet_type;
+		typedef std::codecvt<wchar_t, char, mbstate_t> facet_type;
 		mbstate_t mbst = mbstate_t();
 
 		const wchar_t* frombegin = s.c_str();
@@ -148,19 +146,19 @@ namespace StringHelper
 		return tobuf.data();
 	}
 
-	inline string T2A(const std::wstring& s, const locale& loc = locale(""))
+	inline std::string T2A(const std::wstring& s, const std::locale& loc = std::locale(""))
 	{
 		return W2A(s, loc);
 	}
 
-	inline string T2A(const std::string& s, const locale& loc = locale(""))
+	inline std::string T2A(const std::string& s, const std::locale& loc = std::locale(""))
 	{
 		return s;
 	}
 
-	inline locale GetGBKLocale()
+	inline std::locale GetGBKLocale()
 	{
-		locale loc;
+		std::locale loc;
 		try
 		{
 			loc = std::locale("zh_CN.GBK");  // linux格式
@@ -180,12 +178,12 @@ namespace StringHelper
 		return std::move(loc);
 	}
 
-	inline string A2GBK(const std::string& s)
+	inline std::string A2GBK(const std::string& s)
 	{
 		return W2A(A2W(s), GetGBKLocale());
 	}
 
-	inline string GBK2A(const std::string& s)
+	inline std::string GBK2A(const std::string& s)
 	{
 		return W2A(A2W(s, GetGBKLocale()));
 	}

@@ -48,7 +48,7 @@ public:
 
 PckFile::PckFile()
 {
-	pImpl = make_unique<PckFileImpl>(this);
+	pImpl = std::make_unique<PckFileImpl>(this);
 }
 
 PckFile::~PckFile()
@@ -222,7 +222,7 @@ uint32_t PckFile::Extract_if(const std::string& directory,
 	// 符合条件的文件数
 	std::atomic<uint32_t> nfiles(0);
 	// 目录的绝对路径
-	filesystem::path dir = filesystem::system_complete(directory);
+	filesystem::path dir = filesystem::absolute(directory);
 
 	for (size_t i = 0; i < nthread; ++i)
 	{
@@ -472,7 +472,7 @@ void PckFile::AddItem(const std::string& diskfilename, const std::string& pckfil
 {
 	if (MyGetFileSize(diskfilename.c_str()) > PCK_MAX_ITEM_SIZE)
 	{
-		throw new runtime_error("目标文件过大");
+		throw new std::runtime_error("目标文件过大");
 	}
 	auto s = NormalizePckFileName(pckfilename);
 	try
@@ -494,7 +494,7 @@ void PckFile::RenameItem(const PckItem& item, const std::string& newname)
 {
 	if (FileExists(newname))
 	{
-		throw new runtime_error("存在同名文件");
+		throw new std::runtime_error("存在同名文件");
 	}
 	pImpl->AddPendingItem(std::make_unique<PckPendingItem_Rename>(item, NormalizePckFileName(newname)));
 }
@@ -508,7 +508,7 @@ void PckFile::UpdateItem(const PckItem& item, const std::string& diskfilename)
 {
 	if (MyGetFileSize(diskfilename.c_str()) > PCK_MAX_ITEM_SIZE)
 	{
-		throw new runtime_error("目标文件过大");
+		throw new std::runtime_error("目标文件过大");
 	}
 	pImpl->AddPendingItem(std::make_unique<PckPendingItem_UpdateFile>(item, diskfilename));
 }
@@ -532,7 +532,7 @@ int PckFile::DeleteDirectory(const std::string& dirname)
 void PckFile::CreateFromDirectory(const std::string& filename, const std::string& dir, bool usedirname, bool overwrite, ProcessCallback callback)
 {
 	auto pck = PckFile::Create(filename, overwrite);
-	auto basedir = filesystem::system_complete(dir + "/");
+	auto basedir = filesystem::absolute(dir + "/");
 	filesystem::path rootname = usedirname ? basedir.parent_path().filename() : "";
 	pck->BeginTransaction();
 	PckFileImpl::EnumDir(basedir, rootname, [&](std::string diskpath, std::string pckpath) {

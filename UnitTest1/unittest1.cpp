@@ -8,6 +8,7 @@
 #include "../include/pcktree.h"
 #include <Windows.h>
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace std;
 
 namespace UnitTest1
 {	

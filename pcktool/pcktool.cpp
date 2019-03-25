@@ -6,13 +6,13 @@
 #include <vector>
 #include <unordered_set>
 #include <fstream>
-#include <experimental/filesystem>
+#include <filesystem>
 #include "../include/pckfile.h"
 #include "../include/pckitem.h"
 #include "../src/stringhelper.h"
 #include "../include/pcktree.h"
 
-namespace filesystem = std::experimental::filesystem;
+using namespace std;
 
 void PrintHelp(const char* s);
 void PrintProgress(int i, int t);
