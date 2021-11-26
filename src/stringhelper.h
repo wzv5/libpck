@@ -175,7 +175,7 @@ namespace StringHelper
 			}
 
 		}
-		return std::move(loc);
+		return loc;
 	}
 
 	inline std::string A2GBK(const std::string& s)

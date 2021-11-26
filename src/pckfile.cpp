@@ -64,7 +64,7 @@ std::shared_ptr<PckFile> PckFile::Open(const std::string& filename, bool readonl
 	p->ReadHead();
 	p->ReadTail();
 	p->ReadIndexTable();
-	return std::move(pck);
+	return pck;
 }
 
 std::shared_ptr<PckFile> PckFile::Create(const std::string& filename, bool overwrite)
@@ -81,7 +81,7 @@ std::shared_ptr<PckFile> PckFile::Create(const std::string& filename, bool overw
 	strcpy(p->m_tail.szAdditionalInfo + 4, PCK_ADDITIONAL_INFO);
 	strcat(p->m_tail.szAdditionalInfo + 4, PCK_ADDITIONAL_INFO_STSM);
 	p->m_indextableaddr = sizeof(_PckHead);
-	return std::move(pck);
+	return pck;
 }
 
 uint32_t PckFile::GetFileCount() const noexcept
@@ -131,7 +131,7 @@ std::vector<uint8_t> PckFile::GetSingleFileData(const PckItem& item)
 			memcpy(buf.data(), compressdata.data(), compressdata.size());
 		}
 	}
-	return std::move(buf);
+	return buf;
 }
 
 std::vector<uint8_t> PckFile::GetSingleFileCompressData(const PckItem& item)
@@ -142,7 +142,7 @@ std::vector<uint8_t> PckFile::GetSingleFileCompressData(const PckItem& item)
 	buf.resize(len);
 	pImpl->m_file.Seek(item.m_index.dwAddressOffset);
 	pImpl->m_file.Read(buf.data(), len);
-	return std::move(buf);
+	return buf;
 }
 
 bool PckFile::FileExists(const std::string& filename) const noexcept
@@ -368,7 +368,7 @@ void PckFile::CommitTransaction(ProcessCallback callback)
 			item.m_index.dwFileDataSize = datasize;
 			memset(item.m_index.szFilename, 0, 256);
 			strcpy(item.m_index.szFilename, p1->GetFileName().c_str());
-			pImpl->m_items.push_back(std::move(item));
+			pImpl->m_items.emplace_back(std::move(item));
 			
 			pImpl->m_indextableaddr += compressdata.size();
 			pImpl->m_totalcompresssize += compressdata.size();
@@ -698,7 +698,7 @@ void PckFile::PckFileImpl::AddPendingItem(std::unique_ptr<PckPendingItem>&& item
 	{
 		m_pck->BeginTransaction();
 	}
-	m_pendingitems.push_back(std::move(item));
+	m_pendingitems.emplace_back(std::move(item));
 	if (!trans)
 	{
 		m_pck->CommitTransaction();

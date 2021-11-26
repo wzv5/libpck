@@ -340,7 +340,7 @@ private:
 		std::string filename2 = filename;
 		filename2[filename2.size() - 2] = 'k';
 		filename2[filename2.size() - 1] = 'x';
-		return std::move(filename2);
+		return filename2;
 	}
 	uint64_t _getfilesize(FILE* f)
 	{

@@ -28,6 +28,6 @@ public:
 	}
 
 private:
-	_PckItemIndex m_index;
+	_PckItemIndex m_index {};
 	std::weak_ptr<PckFile> m_pck;  // 使用弱引用指向父PckFile对象，避免循环引用
 };

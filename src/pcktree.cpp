@@ -15,7 +15,7 @@ std::map<std::string, PckTreeItem> PckTree::BuildTree(std::shared_ptr<PckFile>& 
 		std::vector<std::string> splitpath;
 		for (auto j = fullpath.begin(); j != fullpath.end(); ++j)
 		{
-			splitpath.push_back(StringHelper::ToLower_Copy(j->string()));
+			splitpath.emplace_back(StringHelper::ToLower_Copy(j->string()));
 		}
 
 		// 每次前进到一个新的文件项目，都把当前节点重置到根节点
@@ -49,5 +49,5 @@ std::map<std::string, PckTreeItem> PckTree::BuildTree(std::shared_ptr<PckFile>& 
 		item.PckItem = &(*i);
 	}
 
-	return std::move(tree);
+	return tree;
 }

@@ -22,5 +22,5 @@ inline std::string NormalizePckFileName(const std::string& filename)
 	if (ret.size() > 255)
 		throw std::runtime_error("文件名长度超出限制");
 
-	return std::move(ret);
+	return ret;
 }
