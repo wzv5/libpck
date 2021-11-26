@@ -1,6 +1,7 @@
 ﻿#include "pckfile.h"
 #include "pckfile_c.h"
 #include "pckitem.h"
+#include <cstring>
 
 struct _PckPtrHolder
 {
@@ -23,7 +24,7 @@ thread_local char _PckLastErrorBuffer[1024];
 #define PCK_GETPTR()												\
 	std::shared_ptr<PckFile>& p = ((_PckPtrHolder*)pck)->ptr;
 
-PckFile_c __stdcall Pck_Open(const char* filename, bool readonly)
+PckFile_c STDCALL Pck_Open(const char* filename, bool readonly)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -39,7 +40,7 @@ PckFile_c __stdcall Pck_Open(const char* filename, bool readonly)
 	}
 }
 
-PckFile_c __stdcall Pck_Create(const char* filename, bool overwrite)
+PckFile_c STDCALL Pck_Create(const char* filename, bool overwrite)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -55,22 +56,22 @@ PckFile_c __stdcall Pck_Create(const char* filename, bool overwrite)
 	}
 }
 
-void __stdcall Pck_Release(PckFile_c pck)
+void STDCALL Pck_Release(PckFile_c pck)
 {
 	delete (_PckPtrHolder*)pck;
 }
 
-bool __stdcall Pck_GetLastError()
+bool STDCALL Pck_GetLastError()
 {
 	return _PckLastError;
 }
 
-const char* __stdcall Pck_GetLastErrorMessage()
+const char* STDCALL Pck_GetLastErrorMessage()
 {
 	return _PckLastErrorBuffer;
 }
 
-uint32_t __stdcall Pck_GetFileCount(PckFile_c pck)
+uint32_t STDCALL Pck_GetFileCount(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -84,7 +85,7 @@ uint32_t __stdcall Pck_GetFileCount(PckFile_c pck)
 	}
 }
 
-PckItem_c __stdcall Pck_GetFileItem_name(PckFile_c pck, const char* filename)
+PckItem_c STDCALL Pck_GetFileItem_name(PckFile_c pck, const char* filename)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -98,7 +99,7 @@ PckItem_c __stdcall Pck_GetFileItem_name(PckFile_c pck, const char* filename)
 	}
 }
 
-PckItem_c __stdcall Pck_GetFileItem_index(PckFile_c pck, uint32_t index)
+PckItem_c STDCALL Pck_GetFileItem_index(PckFile_c pck, uint32_t index)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -112,7 +113,7 @@ PckItem_c __stdcall Pck_GetFileItem_index(PckFile_c pck, uint32_t index)
 	}
 }
 
-const char* __stdcall Pck_Item_GetFileName(PckItem_c item)
+const char* STDCALL Pck_Item_GetFileName(PckItem_c item)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -126,7 +127,7 @@ const char* __stdcall Pck_Item_GetFileName(PckItem_c item)
 	}
 }
 
-uint32_t __stdcall Pck_Item_GetFileDataSize(PckItem_c item)
+uint32_t STDCALL Pck_Item_GetFileDataSize(PckItem_c item)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -140,7 +141,7 @@ uint32_t __stdcall Pck_Item_GetFileDataSize(PckItem_c item)
 	}
 }
 
-bool __stdcall Pck_Item_GetFileData(PckItem_c item, void* buf)
+bool STDCALL Pck_Item_GetFileData(PckItem_c item, void* buf)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -156,7 +157,7 @@ bool __stdcall Pck_Item_GetFileData(PckItem_c item, void* buf)
 	}
 }
 
-uint32_t __stdcall Pck_Item_GetFileCompressDataSize(PckItem_c item)
+uint32_t STDCALL Pck_Item_GetFileCompressDataSize(PckItem_c item)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -170,7 +171,7 @@ uint32_t __stdcall Pck_Item_GetFileCompressDataSize(PckItem_c item)
 	}
 }
 
-bool __stdcall Pck_Item_GetFileCompressData(PckItem_c item, void* buf)
+bool STDCALL Pck_Item_GetFileCompressData(PckItem_c item, void* buf)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -186,13 +187,13 @@ bool __stdcall Pck_Item_GetFileCompressData(PckItem_c item, void* buf)
 	}
 }
 
-bool __stdcall Pck_FileExists(PckFile_c pck, const char* filename)
+bool STDCALL Pck_FileExists(PckFile_c pck, const char* filename)
 {
 	PCK_GETPTR();
 	return p->FileExists(filename);
 }
 
-bool __stdcall Pck_AddItem_buf(PckFile_c pck, const void* buf, uint32_t len, const char* filename)
+bool STDCALL Pck_AddItem_buf(PckFile_c pck, const void* buf, uint32_t len, const char* filename)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -207,7 +208,7 @@ bool __stdcall Pck_AddItem_buf(PckFile_c pck, const void* buf, uint32_t len, con
 	}
 }
 
-bool __stdcall Pck_AddItem_item(PckFile_c pck, PckItem_c item)
+bool STDCALL Pck_AddItem_item(PckFile_c pck, PckItem_c item)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -223,7 +224,7 @@ bool __stdcall Pck_AddItem_item(PckFile_c pck, PckItem_c item)
 	}
 }
 
-bool __stdcall Pck_AddItem_file(PckFile_c pck, const char* diskfilename, const char* pckfilename)
+bool STDCALL Pck_AddItem_file(PckFile_c pck, const char* diskfilename, const char* pckfilename)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -238,7 +239,7 @@ bool __stdcall Pck_AddItem_file(PckFile_c pck, const char* diskfilename, const c
 	}
 }
 
-bool __stdcall Pck_DeleteItem(PckFile_c pck, PckItem_c item)
+bool STDCALL Pck_DeleteItem(PckFile_c pck, PckItem_c item)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -254,7 +255,7 @@ bool __stdcall Pck_DeleteItem(PckFile_c pck, PckItem_c item)
 	}
 }
 
-bool __stdcall Pck_DeleteDirectory(PckFile_c pck, const char* dirname)
+bool STDCALL Pck_DeleteDirectory(PckFile_c pck, const char* dirname)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -269,7 +270,7 @@ bool __stdcall Pck_DeleteDirectory(PckFile_c pck, const char* dirname)
 	}
 }
 
-bool __stdcall Pck_RenameItem(PckFile_c pck, PckItem_c item, const char* newname)
+bool STDCALL Pck_RenameItem(PckFile_c pck, PckItem_c item, const char* newname)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -285,7 +286,7 @@ bool __stdcall Pck_RenameItem(PckFile_c pck, PckItem_c item, const char* newname
 	}
 }
 
-bool __stdcall Pck_UpdateItem_buf(PckFile_c pck, PckItem_c item, const void* buf, uint32_t len)
+bool STDCALL Pck_UpdateItem_buf(PckFile_c pck, PckItem_c item, const void* buf, uint32_t len)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -301,7 +302,7 @@ bool __stdcall Pck_UpdateItem_buf(PckFile_c pck, PckItem_c item, const void* buf
 	}
 }
 
-bool __stdcall Pck_UpdateItem_file(PckFile_c pck, PckItem_c item, const char* diskfilename)
+bool STDCALL Pck_UpdateItem_file(PckFile_c pck, PckItem_c item, const char* diskfilename)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -317,7 +318,7 @@ bool __stdcall Pck_UpdateItem_file(PckFile_c pck, PckItem_c item, const char* di
 	}
 }
 
-bool __stdcall Pck_Extract(PckFile_c pck, const char* dir, ProcessCallback_c callback)
+bool STDCALL Pck_Extract(PckFile_c pck, const char* dir, ProcessCallback_c callback)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -332,7 +333,7 @@ bool __stdcall Pck_Extract(PckFile_c pck, const char* dir, ProcessCallback_c cal
 	}
 }
 
-bool __stdcall Pck_Extract_if(PckFile_c pck, const char* dir, bool(__stdcall *fn)(PckItem_c), ProcessCallback_c callback)
+bool STDCALL Pck_Extract_if(PckFile_c pck, const char* dir, bool(STDCALL *fn)(PckItem_c), ProcessCallback_c callback)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -350,7 +351,7 @@ bool __stdcall Pck_Extract_if(PckFile_c pck, const char* dir, bool(__stdcall *fn
 	}
 }
 
-uint64_t __stdcall Pck_GetFileSize(PckFile_c pck)
+uint64_t STDCALL Pck_GetFileSize(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -364,7 +365,7 @@ uint64_t __stdcall Pck_GetFileSize(PckFile_c pck)
 	}
 }
 
-uint64_t __stdcall Pck_GetTotalDataSize(PckFile_c pck)
+uint64_t STDCALL Pck_GetTotalDataSize(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -378,7 +379,7 @@ uint64_t __stdcall Pck_GetTotalDataSize(PckFile_c pck)
 	}
 }
 
-uint64_t __stdcall Pck_GetTotalCompressDataSize(PckFile_c pck)
+uint64_t STDCALL Pck_GetTotalCompressDataSize(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -392,7 +393,7 @@ uint64_t __stdcall Pck_GetTotalCompressDataSize(PckFile_c pck)
 	}
 }
 
-uint64_t __stdcall Pck_GetRedundancySize(PckFile_c pck)
+uint64_t STDCALL Pck_GetRedundancySize(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -406,7 +407,7 @@ uint64_t __stdcall Pck_GetRedundancySize(PckFile_c pck)
 	}
 }
 
-uint64_t __stdcall Pck_GetIndexTableSize(PckFile_c pck)
+uint64_t STDCALL Pck_GetIndexTableSize(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -420,7 +421,7 @@ uint64_t __stdcall Pck_GetIndexTableSize(PckFile_c pck)
 	}
 }
 
-bool __stdcall Pck_BeginTransaction(PckFile_c pck)
+bool STDCALL Pck_BeginTransaction(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -435,7 +436,7 @@ bool __stdcall Pck_BeginTransaction(PckFile_c pck)
 	}
 }
 
-bool __stdcall Pck_CancelTransaction(PckFile_c pck)
+bool STDCALL Pck_CancelTransaction(PckFile_c pck)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -450,7 +451,7 @@ bool __stdcall Pck_CancelTransaction(PckFile_c pck)
 	}
 }
 
-bool __stdcall Pck_CommitTransaction(PckFile_c pck, ProcessCallback_c callback)
+bool STDCALL Pck_CommitTransaction(PckFile_c pck, ProcessCallback_c callback)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -465,7 +466,7 @@ bool __stdcall Pck_CommitTransaction(PckFile_c pck, ProcessCallback_c callback)
 	}
 }
 
-bool __stdcall Pck_CreateFromDirectory(const char* filename, const char* dir, bool usedirname, bool overwrite, ProcessCallback_c callback)
+bool STDCALL Pck_CreateFromDirectory(const char* filename, const char* dir, bool usedirname, bool overwrite, ProcessCallback_c callback)
 {
 	PCK_RESETLASTERROR();
 	try
@@ -481,7 +482,7 @@ bool __stdcall Pck_CreateFromDirectory(const char* filename, const char* dir, bo
 	}
 }
 
-bool __stdcall Pck_ReBuild(const char* filename, const char* newname, bool overwrite, ProcessCallback_c callback)
+bool STDCALL Pck_ReBuild(const char* filename, const char* newname, bool overwrite, ProcessCallback_c callback)
 {
 	PCK_RESETLASTERROR();
 	try

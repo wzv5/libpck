@@ -211,8 +211,5 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 
-*.o
-pckmain
-*.VC.opendb
-*.VC.db
-*.lst
+CMakeFiles/
+/.vscode/

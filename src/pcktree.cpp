@@ -1,4 +1,4 @@
-#include "pcktree.h"
+ï»¿#include "pcktree.h"
 #include "pckfile.h"
 #include "pckitem.h"
 #include "myfilesystem.h"
@@ -10,7 +10,7 @@ std::map<std::string, PckTreeItem> PckTree::BuildTree(std::shared_ptr<PckFile>& 
 
 	for (auto i = pck->begin(); i != pck->end(); ++i)
 	{
-		// ²ğ·ÖÂ·¾¶£¬²¢°ÑÂ·¾¶×ª»»ÎªĞ¡Ğ´
+		// æ‹†åˆ†è·¯å¾„ï¼Œå¹¶æŠŠè·¯å¾„è½¬æ¢ä¸ºå°å†™
 		filesystem::path fullpath = i->GetFileName();
 		std::vector<std::string> splitpath;
 		for (auto j = fullpath.begin(); j != fullpath.end(); ++j)
@@ -18,14 +18,14 @@ std::map<std::string, PckTreeItem> PckTree::BuildTree(std::shared_ptr<PckFile>& 
 			splitpath.emplace_back(StringHelper::ToLower_Copy(j->string()));
 		}
 
-		// Ã¿´ÎÇ°½øµ½Ò»¸öĞÂµÄÎÄ¼şÏîÄ¿£¬¶¼°Ñµ±Ç°½ÚµãÖØÖÃµ½¸ù½Úµã
+		// æ¯æ¬¡å‰è¿›åˆ°ä¸€ä¸ªæ–°çš„æ–‡ä»¶é¡¹ç›®ï¼Œéƒ½æŠŠå½“å‰èŠ‚ç‚¹é‡ç½®åˆ°æ ¹èŠ‚ç‚¹
 		auto currentnode = &tree;
-		// ¼ÇÂ¼ÉÏ´ÎµÄ½Úµã
+		// è®°å½•ä¸Šæ¬¡çš„èŠ‚ç‚¹
 		PckTreeItem* parent = nullptr;
-		// ÖØĞÂ×éºÏµ±Ç°ËùÔÚµÄÍêÕûÄ¿Â¼
+		// é‡æ–°ç»„åˆå½“å‰æ‰€åœ¨çš„å®Œæ•´ç›®å½•
 		std::string dir = "";
 
-		// ±éÀú²ğ·ÖºóµÄÂ·¾¶
+		// éå†æ‹†åˆ†åçš„è·¯å¾„
 		for (size_t j = 0; j < splitpath.size() - 1; ++j)
 		{
 			dir.append(splitpath[j]);
@@ -34,19 +34,19 @@ std::map<std::string, PckTreeItem> PckTree::BuildTree(std::shared_ptr<PckFile>& 
 			item.FileName = splitpath[j];
 			item.FullPath = dir.substr(0, dir.size() - 1);
 			item.Parent = parent;
-			item.PckItem = nullptr;
+			item.Item = nullptr;
 			item.IsDirectory = true;
 
-			// °Ñµ±Ç°ÏîÄ¿±£´æÎªparent
+			// æŠŠå½“å‰é¡¹ç›®ä¿å­˜ä¸ºparent
 			parent = &item;
-			// Ç°½øµ½×Ó½ÚµãÖĞ
+			// å‰è¿›åˆ°å­èŠ‚ç‚¹ä¸­
 			currentnode = &item.Items;
 		}
 		auto& item = (*currentnode)[splitpath[splitpath.size() - 1]];
 		item.FileName = fullpath.filename().string();
 		item.FullPath = i->GetFileName();
 		item.Parent = parent;
-		item.PckItem = &(*i);
+		item.Item = &(*i);
 	}
 
 	return tree;

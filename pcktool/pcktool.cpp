@@ -1,16 +1,13 @@
-﻿// pcktool.cpp : 定义控制台应用程序的入口点。
-//
-
-#include "stdafx.h"
-#include <string>
+﻿#include <string>
 #include <vector>
 #include <unordered_set>
 #include <fstream>
 #include <filesystem>
-#include "../include/pckfile.h"
-#include "../include/pckitem.h"
-#include "../src/stringhelper.h"
-#include "../include/pcktree.h"
+#include <cstring>
+#include "pckfile.h"
+#include "pckitem.h"
+#include "stringhelper.h"
+#include "pcktree.h"
 
 using namespace std;
 
@@ -169,13 +166,12 @@ void PrintHelp(const char* s)
 	filesystem::path p = s;
 	std::string helpstr = HELPSTR;
 	auto f = StringHelper::ReplaceAll<std::string>(helpstr, "{0}", p.filename().string());
-	printf(f.c_str());
+	puts(f.c_str());
 }
 
 void PrintProgress(int i, int t)
 {
-	auto s = StringHelper::FormatString("\r%d / %d", i, t);
-	printf(s.c_str());
+	printf("\r%d / %d", i, t);
 }
 
 bool ExtractAll(const char* pckname)
@@ -187,7 +183,7 @@ bool ExtractAll(const char* pckname)
 		pck->Extract("./", [](auto i, auto t) {
 			PrintProgress(i, t);
 			return true;
-		});
+			});
 		printf("\n完成！\n");
 		ret = true;
 	}
@@ -208,7 +204,7 @@ bool ExtractSingle(const char* pckname, const char* filename)
 		pck->GetSingleFileItem(filename);
 		pck->Extract_if("./", [&](const PckItem& item) {
 			return strcmp(item.GetFileName(), filename) == 0;
-		});
+			});
 		printf("完成！\n");
 		ret = true;
 	}
@@ -277,10 +273,10 @@ bool ExtractList(const char* pckname, const char* excludelist, const char* keepl
 				return true;
 			}
 			return false;
-		}, [](auto i, auto t) {
-			PrintProgress(i, t);
-			return true;
-		});
+			}, [](auto i, auto t) {
+				PrintProgress(i, t);
+				return true;
+			});
 		printf("\n完成！\n");
 		ret = true;
 	}
@@ -299,7 +295,7 @@ bool CompressDir(const char* pckname, const char* dirname)
 		PckFile::CreateFromDirectory(pckname, dirname, true, true, [](auto i, auto t) {
 			PrintProgress(i, t);
 			return true;
-		});
+			});
 		printf("\n完成！\n");
 		ret = true;
 	}
@@ -320,8 +316,7 @@ bool ListAll(const char* pckname)
 		printf("================\n");
 		for (auto i = pck->begin(); i != pck->end(); ++i)
 		{
-			printf(i->GetFileName());
-			printf("\n");
+			printf("%s\n", i->GetFileName());
 		}
 		ret = true;
 	}
@@ -338,10 +333,9 @@ void _listtree(PckTreeItem item, int level = 0)
 	{
 		printf("\t");
 	}
-	printf(item.FileName.c_str());
-	printf("\n");
+	printf("%s\n", item.FileName.c_str());
 	level++;
-	for each (auto i in item.Items)
+	for (const auto& i : item.Items)
 	{
 		if (i.second.IsDirectory)
 		{
@@ -353,8 +347,7 @@ void _listtree(PckTreeItem item, int level = 0)
 			{
 				printf("\t");
 			}
-			printf(i.second.FileName.c_str());
-			printf("\n");
+			printf("%s\n", i.second.FileName.c_str());
 		}
 	}
 }
@@ -368,7 +361,7 @@ bool ListTree(const char* pckname)
 		printf("文件数：%d\n", pck->GetFileCount());
 		printf("================\n");
 		auto tree = PckTree::BuildTree(pck);
-		for each (auto& i in tree)
+		for (const auto& i : tree)
 		{
 			_listtree(i.second);
 		}
@@ -450,7 +443,7 @@ bool ReBuild(const char* pckname, const char* outname)
 		PckFile::ReBuild(pckname, outname, true, [](auto i, auto t) {
 			PrintProgress(i, t);
 			return true;
-		});
+			});
 		printf("\n完成！\n");
 		ret = true;
 	}

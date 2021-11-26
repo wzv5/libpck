@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <memory>
 #include <map>
@@ -13,7 +13,7 @@ public:
 	std::string FullPath;
 	std::string FileName;
 	bool IsDirectory = false;
-	PckItem const *PckItem = nullptr;
+	PckItem const* Item = nullptr;
 	PckTreeItem* Parent = nullptr;
 	std::map<std::string, PckTreeItem> Items;
 };
